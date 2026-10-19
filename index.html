@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Partidos de hoy</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0A0E1A;--card:#121A2C;--ink:#EAF0FF;--muted:#8794B3;--line:#222D47;--pitch:#C6F432;--on:#0A0E1A;--loss:#FF6B6B;--amber:#F5B942;color-scheme:dark;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Barlow",system-ui,sans-serif;line-height:1.4;font-size:16px}
+main{max-width:480px;margin:0 auto;padding:14px 14px 40px}
+.top{display:flex;justify-content:space-between;align-items:flex-end}
+.top small{display:block;color:var(--muted);font-size:13px}
+.top .d{font-size:18px;font-weight:800}
+.bank{text-align:right;font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1}
+.tabs{display:flex;gap:6px;margin:14px 0 8px;overflow-x:auto}
+.tabs button{flex:1;white-space:nowrap;padding:9px 10px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-weight:600;font-size:14px}
+.tabs button[aria-selected="true"]{background:var(--pitch);border-color:var(--pitch);color:#fff}
+.panel{display:none}.panel.on{display:block}
+h2{font-size:15px;margin:20px 0 8px;padding-bottom:4px;border-bottom:2px solid var(--pitch)}
+.note{background:var(--card);border:1px dashed var(--amber);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--muted);margin:10px 0}
+.c{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:12px}
+.hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;color:#fff}
+.bd{width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;letter-spacing:.02em}
+.vs{background:rgba(0,0,0,.35);border-radius:999px;padding:5px 12px;font-weight:700;font-size:14px}
+.nm{display:flex;justify-content:space-between;padding:10px 16px 6px;font-weight:700;gap:8px}
+.nm span:last-child{text-align:right}
+.bar{display:flex;height:10px;margin:2px 16px 0;border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%}
+.pc{display:flex;justify-content:space-between;padding:6px 16px 12px;font-size:13px;color:var(--muted)}
+.pc b{color:var(--ink)}
+.dt{display:none;border-top:1px solid var(--line);padding:12px 16px 16px;font-size:14px}
+.c.open .dt{display:block}
+.dt h3{font-size:13px;color:var(--muted);font-weight:600;margin:12px 0 4px}
+.dt h3:first-child{margin-top:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+table{width:100%;border-collapse:collapse}
+td,th{padding:4px 3px;text-align:center;font-size:13px}
+th{color:var(--muted);font-weight:600}
+td:first-child{text-align:left;font-weight:600}
+input{width:100%;padding:8px 2px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:15px;text-align:center}
+input:focus-visible,button:focus-visible{outline:2px solid var(--pitch);outline-offset:2px}
+.sum{margin-top:10px;padding:10px;border-radius:10px;background:var(--bg);font-size:14px}
+.g{color:var(--pitch);font-weight:700}.r{color:var(--loss);font-weight:700}
+.bt{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px}
+.bt button{padding:9px 2px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:13px}
+.bt button.on{background:var(--pitch);border-color:var(--pitch);color:#fff}
+.bt button:disabled{opacity:.55}
+.st{display:flex;gap:18px;margin:6px 0 10px;font-size:13px;color:var(--muted)}
+.st b{display:block;color:var(--ink);font-size:19px}
+.bet,.m{padding:11px 0;border-bottom:1px solid var(--line)}
+.bet .a{display:flex;gap:8px;margin-top:8px}
+.bet .a button{flex:1;padding:9px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-weight:600}
+.m .h{display:flex;justify-content:space-between;gap:8px;font-weight:600}
+.m .h span:last-child{color:var(--muted);font-weight:400;font-size:13px;white-space:nowrap}
+.mini{background:none;border:0;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;margin-top:16px;padding:6px 0}
+.live{color:var(--amber);font-size:13px;padding:0 16px 14px}
+.empty{color:var(--muted);font-size:14px;padding:10px 0}
+.lg{display:flex;gap:6px;overflow-x:auto;margin:6px 0 12px;padding-bottom:2px}
+.lg button{white-space:nowrap;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-weight:600;font-size:14px}
+.lg button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.lg small{opacity:.6;margin-left:4px;font-weight:400}
+.sc{display:flex;align-items:center;justify-content:center;gap:14px;padding:6px 0 2px}
+.sc .bd{width:46px;height:46px;font-size:14px;color:#fff;border:0}
+.sc .n{font-size:44px;font-weight:800;letter-spacing:.02em;line-height:1}
+.scs{text-align:center;color:var(--muted);font-size:13px;margin-bottom:6px}
+.mk{margin:7px 0}
+.ml{display:flex;justify-content:space-between;gap:8px;font-size:14px}
+.ml span:last-child{color:var(--muted);white-space:nowrap}
+.mk.hi .ml{font-weight:700}.mk.hi .ml span:last-child{color:var(--pitch)}
+.mb{height:8px;background:var(--bg);border-radius:5px;overflow:hidden;margin-top:3px}
+.mb i{display:block;height:100%;border-radius:5px}
+.tl{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:6px}
+.tl div{background:var(--bg);border-radius:12px;padding:10px 4px;text-align:center;font-size:12px;color:var(--muted)}
+.tl b{display:block;font-size:22px;color:var(--ink)}
+.bp{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 16px 14px;padding:10px 12px;border-radius:12px;background:var(--bg);border-left:4px solid var(--pitch)}
+.bp small{display:block;color:var(--muted);font-size:12px}
+.bp b{font-size:16px}
+.bp .r2{text-align:right}
+.bp .r2 b{color:var(--pitch)}
+
+.cb{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:14px}
+.cb.safe{border-top:5px solid var(--pitch)}
+.cb.loka{border-top:5px solid #8B5CF6}
+.cb h2{border:0;margin:0 0 2px;padding:0;font-size:19px}
+.cb .sub{color:var(--muted);font-size:13px;margin-bottom:8px}
+.it{padding:9px 0;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;font-size:14px}
+.it small{display:block;color:var(--muted)}
+.it b.p{white-space:nowrap}
+.warn{font-size:12px;color:var(--muted);margin-top:10px}
+.stake{display:flex;align-items:center;gap:8px;margin:12px 0 0;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.stake label{flex:1;font-size:14px;font-weight:600}
+.stake input{width:110px;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:16px;text-align:right}
+.eb{border-radius:16px;padding:16px;color:#fff;margin:22px 0 8px;display:flex;align-items:center;gap:14px}
+.eb .tr{font-size:36px;line-height:1}
+.eb b{font-size:21px;display:block}
+.eb small{opacity:.9;font-size:13px}
+.dayh{font-size:13px;font-weight:700;margin:14px 0 6px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.foot{font-size:12px;color:var(--muted);margin-top:26px;border-top:1px solid var(--line);padding-top:12px}
+.sub2{color:var(--muted);font-size:13px}
+.tk{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin:0 0 16px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.tk.safe .tkh{background:linear-gradient(115deg,#0F5132,#22A06B)}
+.tk.loka .tkh{background:linear-gradient(115deg,#4C1D95,#A855F7)}
+.tkh{display:flex;align-items:center;gap:14px;padding:16px;color:#fff}
+.ring{position:relative;width:76px;height:76px;flex:none}
+.ring svg{width:76px;height:76px;display:block}
+.ring span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px}
+.tkt b{font-size:19px;display:block;line-height:1.2}
+.tkt small{opacity:.9;font-size:13px}
+.leg{display:flex;align-items:center;gap:10px;padding:12px 14px;border-top:1px dashed var(--line)}
+.leg .num{width:22px;height:22px;border-radius:50%;background:var(--bg);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+.bds{display:flex;flex:none}
+.bds i{width:34px;height:34px;border-radius:50%;color:#fff;font-style:normal;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid var(--card)}
+.bds i+i{margin-left:-10px}
+.lgt{flex:1;min-width:0}
+.lgt b{display:block;font-size:14px}
+.lgt small{display:block;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pb{height:6px;background:var(--bg);border-radius:4px;margin-top:5px;overflow:hidden}
+.pb i{display:block;height:100%;background:var(--pitch);border-radius:4px}
+.tk.loka .pb i{background:#A855F7}
+.pp{font-weight:800;font-size:16px;flex:none}
+.prize{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:8px;padding:14px;background:var(--bg);align-items:center;text-align:center}
+.prize small{display:block;font-size:11px;color:var(--muted)}
+.prize b{font-size:18px}
+.prize .big b{font-size:26px;color:var(--pitch);letter-spacing:-.02em}
+.tk.loka .prize .big b{color:#A855F7}
+.tk .warn{padding:10px 14px 14px;margin:0}
+.tiles{display:flex;gap:10px;overflow-x:auto;margin:8px 0 14px;padding:2px 2px 8px}
+.lt{flex:none;width:112px;border:0;border-radius:16px;padding:12px 8px 10px;color:#fff;text-align:center;cursor:pointer;font:inherit;opacity:.72;transition:transform .15s,opacity .15s}
+.lt[aria-pressed="true"]{opacity:1;transform:translateY(-3px);box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--ink)}
+.lt svg{display:block;margin:0 auto 6px}
+.lt b{display:block;font-size:14px;line-height:1.15}
+.lt small{display:block;font-size:12px;opacity:.9;margin-top:2px}
+.hero{border-radius:20px;padding:18px 16px;color:#fff;display:flex;align-items:center;gap:14px;margin:6px 0 4px}
+.hero svg{flex:none}
+.hero b{font-size:26px;letter-spacing:.02em;display:block;line-height:1.1}
+.hero small{opacity:.92;font-size:13px}
+.cbn{border-radius:20px;padding:16px;color:#fff;display:flex;align-items:center;gap:16px;margin:4px 0 8px}
+.cbn svg{flex:none;filter:drop-shadow(0 4px 8px rgba(0,0,0,.35))}
+.cbn small{display:block;opacity:.9;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+.cbn b{display:block;font-size:24px;line-height:1.1}
+.cbn span{font-size:13px;opacity:.92}
+.lbn{border-radius:20px;padding:14px 16px;color:#fff;display:flex;align-items:center;gap:14px;margin:0 0 10px}
+.lbn b{font-size:22px;display:block;line-height:1.1}
+.lbn small{opacity:.92;font-size:13px}
+.hl{padding:2px 16px 8px;font-size:14px}
+.hl b{color:var(--pitch)}
+.vd{background:var(--bg);border-radius:14px;padding:12px 14px;margin-bottom:8px;border-left:5px solid var(--pitch)}
+.vd small{display:block;color:var(--muted);font-size:12px}
+.vd b{display:block;font-size:20px;margin:2px 0}
+.vd span{font-size:13px;color:var(--pitch);font-weight:700}
+.ex{font-size:13px;color:var(--muted);margin:0 0 10px}
+.say{font-size:14px;margin:2px 0 8px}
+.mny{margin-top:12px;background:var(--bg);border-radius:12px;padding:10px 12px;font-size:14px}
+.pr{margin:8px 0}
+.pr .ml{font-size:14px}
+.pr.hi .ml{font-weight:700}
+
+/* ===== estilo oscuro deportivo y compacto ===== */
+body{background:radial-gradient(900px 380px at 50% -120px,#1B2A52 0,transparent 70%) no-repeat,var(--bg);font-size:15px;line-height:1.3}
+main{padding:10px 12px 32px}
+.top .d{font-size:22px;font-weight:800;letter-spacing:.01em;text-transform:uppercase}
+.top small{text-transform:uppercase;letter-spacing:.1em;font-size:11px}
+.tabs{margin:10px 0 6px;gap:5px}
+.tabs button{padding:7px 12px;font-size:13px;border-radius:10px;background:var(--card);border-color:var(--line);color:var(--muted);text-transform:uppercase;letter-spacing:.04em;flex:none}
+.tabs button[aria-selected="true"]{background:var(--pitch);border-color:var(--pitch);color:var(--on)}
+.stake{margin:8px 0 0;padding:7px 10px;border-radius:10px}
+.stake label{font-size:13px}
+.stake input{padding:6px 8px;font-size:15px}
+.note{border:1px solid var(--line);border-left:3px solid var(--amber);border-style:solid;border-left-style:solid;padding:8px 10px;font-size:12.5px;margin:8px 0}
+h2,h3{letter-spacing:.02em}
+.c{border-radius:12px;margin-bottom:8px;background:var(--card)}
+.hd{padding:9px 12px}
+.bd{width:40px;height:40px;font-size:13px;border-width:2px}
+.vs{padding:4px 10px;font-size:13px}
+.nm{padding:7px 12px 4px;font-size:14px}
+.bar{margin:2px 12px 0;height:7px}
+.pc{padding:5px 12px 8px;font-size:12px}
+.bp{margin:0 12px 10px;padding:8px 10px;border-radius:10px}
+.bp b{font-size:14px}
+.hl{padding:2px 12px 6px;font-size:13px}
+.dt{padding:10px 12px 12px;font-size:13px}
+.vd{padding:9px 12px;border-radius:10px}
+.vd b{font-size:18px}
+.sc .n{font-size:34px}
+.sc .bd{width:38px;height:38px}
+.tl div{padding:7px 2px;border-radius:10px}
+.tl b{font-size:19px}
+.mk{margin:5px 0}
+.mb{height:6px}
+.mny{padding:8px 10px;font-size:13px;margin-top:8px}
+.tiles{gap:8px;margin:6px 0 10px}
+.lt{width:92px;padding:9px 6px 8px;border-radius:12px}
+.lt svg{width:34px;height:34px;margin-bottom:4px}
+.lt b{font-size:12.5px}
+.lt small{font-size:11px}
+.lt[aria-pressed="true"]{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--pitch)}
+.hero{padding:12px 14px;border-radius:14px;margin:4px 0 2px}
+.hero b{font-size:22px}
+.hero svg{width:46px;height:46px}
+.eb{padding:11px 14px;margin:14px 0 6px;border-radius:12px}
+.eb .tr{font-size:28px}
+.eb b{font-size:18px}
+.dayh{margin:10px 0 5px;font-size:12px}
+.cbn,.lbn{padding:11px 14px;border-radius:14px}
+.cbn b{font-size:20px}.lbn b{font-size:18px}
+.tk{border-radius:14px;margin-bottom:12px}
+.tkh{padding:12px 14px}
+.ring,.ring svg{width:62px;height:62px}
+.tkt b{font-size:17px}
+.leg{padding:9px 12px}
+.bds i{width:30px;height:30px}
+.prize{padding:10px}
+.prize .big b{font-size:22px}
+.prize .big b,.hl b,.mk.hi .ml span:last-child,.vd span,.bp .r2 b{color:var(--pitch)}
+.tk.loka .prize .big b{color:#B388FF}
+.bt button.on{color:var(--on)}
+.foot{font-size:11px;margin-top:18px;padding-top:10px}
+.c,.tk,.cb,.stake{box-shadow:0 1px 0 rgba(255,255,255,.03) inset}
+
+/* ===== pantalla grande: aprovechar el ancho ===== */
+@media (min-width:760px){
+  main{max-width:1240px;padding:16px 28px 40px}
+  .top .d{font-size:28px}
+  .stake{max-width:440px}
+  .tabs{margin:14px 0 10px}
+  .tabs button{padding:9px 18px;font-size:14px}
+  .tiles{flex-wrap:wrap;overflow:visible}
+  .lt{width:150px}
+  #fb,#eu,#nb,#tn,#cb{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:12px;align-items:start}
+  #fb>.c,#eu>.c,#nb>.c,#tn>.c{margin-bottom:0}
+  #fb>:not(.c),#eu>:not(.c),#nb>:not(.c),#tn>:not(.c),#cb>.note,#cb>.hero,#cb>.cbn,#cb>.lbn,#cb>.eb,#cb>.empty,#cb>h2{grid-column:1/-1}
+  #cb>.tk{margin-bottom:0}
+  #nb .dayh,#tn .dayh{display:none}
+  #hs{max-width:820px;margin:0 auto}
+  .foot{max-width:none}
+}
+@media (min-width:1500px){
+  main{max-width:1500px}
+  #fb,#eu,#nb,#tn,#cb{grid-template-columns:repeat(auto-fill,minmax(400px,1fr))}
+}
+
+/* ===== deportes: baloncesto y tenis ===== */
+.sh{position:relative;overflow:hidden;border-radius:16px;padding:16px 18px;color:#fff;display:flex;align-items:center;gap:14px;margin:6px 0 10px}
+.sh>*{position:relative}
+.sh>.deco{position:absolute;right:-8px;top:0;height:100%;width:auto;opacity:.2;pointer-events:none}
+.sh b{font-size:26px;text-transform:uppercase;letter-spacing:.04em;display:block;line-height:1.05}
+.sh small{opacity:.92;font-size:13px}
+.spt{display:flex;gap:10px;overflow-x:auto;margin:6px 0 12px;padding:2px 2px 8px;flex-wrap:wrap}
+.sp-tile{flex:none;width:216px;border:0;border-radius:14px;padding:12px 12px;color:#fff;display:flex;gap:11px;align-items:center;text-align:left;font:inherit;cursor:pointer;opacity:.7;position:relative;overflow:hidden;transition:transform .15s,opacity .15s}
+.sp-tile[aria-pressed="true"]{opacity:1;transform:translateY(-2px);box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--pitch)}
+.sp-tile b{display:block;font-size:15px;line-height:1.15}
+.sp-tile small{display:block;font-size:12px;opacity:.9;margin-top:2px}
+.sp-tile .chip{position:absolute;top:7px;right:8px;background:rgba(0,0,0,.38);border-radius:999px;font-size:11px;padding:2px 8px;font-weight:700}
+.sp-tile .em{flex:none;position:relative;width:46px;height:46px}
+.sp-tile .em svg{display:block}
+.sp-tile .em .mid{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+.sp-tile .txt{min-width:0;padding-right:34px}
+.sp-tile .txt b{overflow:hidden;text-overflow:ellipsis}
+@media (max-width:759px){.spt{flex-wrap:nowrap}.sp-tile{width:196px}}
+
+.seg{display:flex;gap:8px;margin:4px 0 12px}
+.seg button{flex:1;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--muted);font:inherit;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer}
+.seg button[aria-pressed="true"]{color:var(--pitch);border-color:var(--pitch);box-shadow:0 0 0 1px var(--pitch) inset}
+@media (min-width:760px){.seg{max-width:560px}}
+</style></head>
+<body>
+<main>
+  <div class="top">
+    <div><small>Lunes 19 de octubre</small><div class="d">Analista de partidos</div></div>
+  </div>
+  <div class="sub2" style="margin-top:2px">Pronósticos de un modelo estadístico. Horas de España.</div>
+  <div class="stake"><label for="st">Cuánto pondrías (tú decides)</label><input id="st" type="number" inputmode="decimal" min="0" step="1" value="10"><span>€</span></div>
+  <div class="tabs">
+    <button id="t1" aria-selected="true">Fútbol</button>
+    <button id="t4" aria-selected="false">Baloncesto</button>
+    <button id="t3" aria-selected="false">Tenis</button>
+    <button id="t2" aria-selected="false">Combinadas</button>
+    <button id="t6" aria-selected="false">Historial</button>
+  </div>
+  <section class="panel on" id="p1">
+    <div class="seg"><button data-f="lig" aria-pressed="true">⚽ Ligas</button><button data-f="eu" aria-pressed="false">🏆 Competiciones europeas</button></div>
+    <div class="tiles" id="lg"></div>
+    <div id="fb"></div>
+  </section>
+  <section class="panel" id="p2"><div id="cb"></div></section>
+  <section class="panel" id="p6"><div id="hs"></div></section>
+  <section class="panel" id="p5"><div class="seg"><button data-f="lig" aria-pressed="true">⚽ Ligas</button><button data-f="eu" aria-pressed="false">🏆 Competiciones europeas</button></div><div id="eu"></div></section>
+  <section class="panel" id="p3">
+    <div class="tiles" id="tnl"></div>
+    <div id="tn"></div>
+  </section>
+  <section class="panel" id="p4">
+    <div class="tiles" id="nbl"></div>
+    <div id="nb"></div>
+  </section>
+  <div class="foot">Solo mayores de 18 años. Ningún pronóstico garantiza ganancias y apostar puede crear adicción. Las cuotas son estimadas y no son las de ninguna casa de apuestas. Apuesta solo dinero que puedas permitirte perder.</div>
+</main>
+<script>
+var C={"AC Milan": "#518A28", "AEK Athens": "#28548A", "AFC Bournemouth": "#43288A", "AGF": "#8A8528", "AS Roma": "#8A4D28", "AZ Alkmaar": "#82288A", "Ajax Amsterdam": "#288A42", "Anderlecht": "#8A6C28", "Ararat-Armenia": "#31288A", "Arsenal": "#D61F26", "Aston Villa": "#59288A", "Atalanta": "#1E4F9B", "Atlético Madrid": "#29288A", "Barcelona": "#A50044", "Bayern": "#DC052D", "Benfica": "#70288A", "Besiktas": "#4D288A", "Bodo/Glimt": "#8A5928", "Borac Banja Luka": "#8A283D", "Braga": "#8A6C28", "Brighton & Hove Albion": "#8A2845", "CSKA Sofia": "#28638A", "CSU Craiova": "#69288A", "Cagliari": "#288A54", "Celta Vigo": "#288A7E", "Celtic": "#8A4228", "Club Brugge": "#4F288A", "Como": "#8A2848", "Coventry": "#4A8A28", "Crystal Palace": "#2A57A5", "Dinamo Zagreb": "#288A5F", "Dortmund": "#C9A200", "Egnatia": "#8A2B28", "F.C. København": "#55288A", "FC Lugano": "#8A7128", "FC Midtjylland": "#8A2883", "FC Nordsjælland": "#28798A", "FC Porto": "#8A286B", "FC Thun": "#3B8A28", "FC Twente": "#288A2E", "Fenerbahce": "#288A83", "Ferencvaros": "#8A2861", "Feyenoord Rotterdam": "#8A2880", "Friburgo": "#C8202F", "Galatasaray": "#285E8A", "Getafe": "#8A2861", "Hajduk Split": "#288A80", "Hapoel Be'er": "#36288A", "Heart of Midlothian": "#878A28", "Iberia 1999": "#288A4A", "Inter": "#0A5EB0", "Inter D'Escaldes": "#288A87", "Jablonec": "#3B8A28", "Jagiellonia Bialystok": "#28738A", "Juventus": "#2B2B2B", "KAA Gent": "#8A287E", "Kairat Almaty": "#8A8828", "Kauno Zalgiris": "#5E288A", "KuPS Kuopio": "#8A282D", "LASK Linz": "#288A2E", "Lech Poznan": "#738A28", "Lens": "#8A283B", "Leverkusen": "#D0202A", "Levski Sofia": "#6E288A", "Lille": "#D0202A", "Lillestrom": "#79288A", "Lincoln Red Imps": "#283B8A", "Liverpool": "#C8102E", "Lyon": "#2B4FA0", "Man. City": "#6CABDD", "Man. United": "#C8202F", "Marsella": "#2EA6E0", "Mjällby AIF": "#8A2867", "Monaco": "#8A4528", "Monza": "#288A6C", "NEC Nijmegen": "#8A283A", "NK Celje": "#8A8228", "Napoli": "#12A0D7", "OFI Crete": "#288A78", "Olympiacos": "#288A4F", "Omonia Nicosia": "#28638A", "PSG": "#1F3A8A", "PSV Eindhoven": "#288A6E", "Pafos": "#288A67", "Panathinaikos": "#8A4528", "Parma": "#4D8A28", "RB Leipzig": "#638A28", "RB Salzburg": "#47288A", "Rayo": "#8A2D28", "Real Betis": "#3D288A", "Real Madrid": "#6C7A99", "Real Sociedad": "#1F5BA8", "Red Star Belgrade": "#708A28", "Riga FC": "#282B8A", "SK Brann": "#288A61", "SK Sturm Graz": "#8A2851", "Sabah FK": "#29288A", "Shakhtar Donetsk": "#8A4828", "Sint-Truidense": "#8A6128", "Slavia Prague": "#28298A", "Slovan Bratislava": "#8A7D28", "Sparta Prague": "#73288A", "Sporting CP": "#8A284C", "Stade Rennais": "#8A282D", "Sunderland": "#8A282B", "TSG Hoffenheim": "#8A2864", "Torino": "#288A2E", "Torreense": "#288A3F", "Tottenham": "#132257", "Trabzonspor": "#288A3D", "Union St.-Gilloise": "#8A8028", "VfB Stuttgart": "#288A3A", "Viking FK": "#838A28", "Viktoria Plzen": "#8A2842", "Villarreal": "#F5D000"};
+var AV={"La Liga": [4.27, 24.91, 9.72], "Premier League": [3.71, 21.78, 9.85], "Serie A": [3.64, 25.01, 9.0], "Bundesliga": [3.75, 21.13, 9.75], "Ligue 1": [3.66, 24.05, 9.5]};
+var ST={"Valencia": [1.97, 11.67, 4.9], "Getafe": [3.03, 14.9, 3.83], "Cadiz": [2.7, 14.6, 4.57], "Levante": [2.03, 11.63, 4.6], "Mallorca": [2.1, 12.27, 3.63], "Betis": [1.63, 10.7, 4.5], "Alaves": [2.33, 13.87, 4.6], "Real Madrid": [1.93, 9.8, 6.5], "Osasuna": [2.53, 14.0, 4.0], "Espanyol": [2.83, 14.57, 4.2], "Celta": [1.83, 11.57, 3.43], "Atletico": [2.13, 11.57, 5.9], "Barcelona": [1.43, 9.43, 7.3], "Real Sociedad": [2.27, 13.0, 5.6], "Sevilla": [2.73, 14.6, 4.17], "Rayo": [2.7, 13.17, 5.37], "Villarreal": [1.77, 11.43, 4.7], "Granada": [2.53, 13.53, 3.67], "Elche": [2.4, 13.77, 4.4], "Athletic": [2.23, 13.27, 6.0], "Valladolid": [2.33, 11.53, 4.13], "Girona": [2.1, 10.97, 4.27], "Almeria": [2.4, 12.23, 4.27], "Las Palmas": [3.1, 11.7, 4.13], "Leganes": [2.17, 13.2, 2.97], "Oviedo": [2.03, 12.77, 4.07], "Santander": [2.62, 14.38, 4.75], "La Coruna": [1.88, 12.5, 5.5], "Malaga": [2.12, 12.5, 5.75], "Crystal Palace": [1.9, 10.4, 4.1], "Arsenal": [1.37, 10.27, 5.23], "Fulham": [2.03, 9.97, 4.97], "Liverpool": [1.57, 10.7, 6.1], "Bournemouth": [2.27, 11.73, 5.43], "Aston Villa": [1.6, 10.0, 4.7], "Leeds": [1.67, 10.73, 4.63], "Wolves": [2.13, 12.87, 3.33], "Newcastle": [2.1, 10.1, 5.83], "Nottingham Forest": [1.77, 11.4, 4.77], "Tottenham": [2.47, 12.67, 5.53], "Southampton": [2.1, 12.13, 3.7], "Everton": [1.77, 10.13, 4.47], "Chelsea": [2.4, 10.53, 6.0], "Leicester": [2.17, 10.97, 3.97], "Brentford": [1.97, 11.17, 4.33], "Man. United": [1.8, 10.37, 5.37], "Brighton": [2.13, 12.13, 4.9], "West Ham": [1.87, 11.17, 4.73], "Man. City": [1.63, 9.97, 6.67], "Burnley": [1.73, 10.5, 3.87], "Luton": [1.87, 11.5, 5.13], "Sheffield United": [2.4, 10.97, 3.77], "Ipswich": [1.93, 10.53, 3.2], "Sunderland": [2.13, 11.43, 3.93], "Coventry": [0.83, 10.5, 3.67], "Hull": [3.17, 10.83, 4.0], "Milan": [1.8, 10.37, 4.27], "Udinese": [1.87, 12.9, 4.23], "Sampdoria": [2.87, 13.6, 3.47], "Atalanta": [1.43, 12.3, 5.27], "Lecce": [1.9, 12.7, 3.97], "Inter": [1.73, 11.6, 5.77], "Monza": [2.17, 12.97, 3.97], "Torino": [1.67, 12.9, 3.67], "Fiorentina": [2.0, 11.43, 4.47], "Cremonese": [1.77, 14.1, 3.7], "Lazio": [2.17, 10.9, 3.97], "Bologna": [1.67, 12.3, 3.87], "Salernitana": [2.37, 11.6, 3.8], "Roma": [1.73, 13.1, 5.1], "Spezia": [2.83, 13.77, 5.23], "Empoli": [1.7, 14.83, 4.5], "Verona": [2.37, 15.53, 3.9], "Napoli": [1.1, 10.1, 5.37], "Juventus": [1.33, 11.9, 6.43], "Sassuolo": [2.03, 11.07, 3.93], "Frosinone": [1.63, 11.73, 5.8], "Genoa": [1.53, 10.87, 3.8], "Cagliari": [1.73, 11.8, 3.9], "Parma": [1.5, 10.87, 4.07], "Venezia": [2.33, 13.37, 4.17], "Como": [1.83, 11.47, 5.37], "Pisa": [2.17, 13.0, 3.6], "Frankfurt": [1.87, 10.4, 4.63], "Bayern": [1.37, 8.37, 7.03], "Augsburg": [2.0, 9.8, 4.7], "Friburgo": [1.47, 9.63, 4.43], "Bochum": [2.03, 13.87, 4.9], "Mainz": [2.03, 10.57, 5.1], "Gladbach": [2.0, 11.17, 3.83], "Hoffenheim": [2.13, 13.43, 6.03], "Union Berlin": [2.0, 11.23, 4.73], "Hertha": [2.43, 12.6, 4.27], "Wolfsburg": [2.0, 11.37, 4.43], "Werder Bremen": [1.93, 10.53, 4.8], "Dortmund": [2.0, 11.23, 5.03], "Leverkusen": [1.77, 8.9, 6.53], "Stuttgart": [1.73, 9.37, 5.63], "RB Leipzig": [1.47, 9.1, 5.27], "FC Koln": [1.9, 8.3, 5.07], "Schalke 04": [1.83, 12.23, 4.83], "Heidenheim": [1.27, 9.8, 4.4], "Darmstadt": [2.5, 12.43, 3.37], "Holstein Kiel": [2.3, 11.83, 3.53], "St. Pauli": [1.53, 9.0, 4.83], "Hamburg": [1.97, 11.83, 3.6], "Elversberg": [1.8, 11.0, 3.6], "Paderborn": [1.4, 9.8, 4.6], "Lyon": [1.77, 11.87, 5.43], "Ajaccio": [1.9, 14.3, 3.1], "Strasbourg": [1.57, 10.87, 4.03], "Monaco": [1.93, 12.43, 5.0], "Clermont": [1.87, 11.93, 3.87], "PSG": [1.13, 8.2, 6.27], "Rennes": [1.67, 12.53, 6.3], "Lorient": [1.17, 9.03, 3.47], "Montpellier": [2.47, 12.43, 4.63], "Troyes": [1.27, 10.93, 4.03], "Lille": [2.03, 10.17, 4.73], "Auxerre": [1.8, 13.7, 4.9], "Marsella": [2.17, 12.37, 4.9], "Reims": [1.9, 11.93, 4.13], "Angers": [1.57, 11.1, 4.03], "Nantes": [2.07, 12.73, 3.63], "Toulouse": [2.03, 14.63, 4.43], "Niza": [1.8, 11.37, 5.1], "Lens": [1.83, 12.43, 6.43], "Brest": [1.63, 13.07, 4.07], "Metz": [1.67, 11.27, 4.27], "Le Havre": [1.9, 13.53, 4.6], "St Etienne": [1.83, 12.77, 4.17], "Paris FC": [2.23, 10.97, 4.13], "Le Mans": [2.5, 14.83, 2.83]};
+var RIV=["Real Madrid|Barcelona", "Real Madrid|Atletico", "Barcelona|Espanyol", "Sevilla|Betis", "Athletic|Real Sociedad", "Man. United|Man. City", "Man. United|Liverpool", "Arsenal|Tottenham", "Liverpool|Everton", "Leeds|Man. United", "Brighton|Crystal Palace", "Milan|Inter", "Roma|Lazio", "Juventus|Inter", "Bayern|Dortmund", "Marsella|PSG", "Lyon|Saint-Etienne"];
+var F=[["La Liga", "Lun 19 21:00", "Getafe", "Rayo", 41.0, 33.7, 25.3], ["Premier League", "Lun 19 21:00", "Tottenham", "Coventry", 47.5, 24.9, 27.7], ["Serie A", "Lun 19 18:30", "Monza", "Cagliari", 41.8, 27.9, 30.4], ["Serie A", "Lun 19 20:45", "Parma", "Torino", 33.7, 27.4, 38.9], ["Champions League", "Mar 20 18:45", "Fenerbahce", "Slavia Prague", 60.3, 22.4, 17.3], ["Champions League", "Mar 20 18:45", "Sabah FK", "Dortmund", 8.6, 17.7, 73.7], ["Champions League", "Mar 20 21:00", "AS Roma", "Slovan Bratislava", 80.3, 14.6, 5.1], ["Champions League", "Mar 20 21:00", "FC Porto", "PSV Eindhoven", 48.9, 24.9, 26.2], ["Champions League", "Mar 20 21:00", "Liverpool", "Villarreal", 75.7, 16.8, 7.4], ["Champions League", "Mar 20 21:00", "Man. City", "AEK Athens", 87.8, 10.4, 1.8], ["Champions League", "Mar 20 21:00", "Napoli", "Bodo/Glimt", 66.8, 20.4, 12.8], ["Champions League", "Mar 20 21:00", "PSG", "Barcelona", 57.5, 23.2, 19.3], ["Champions League", "Mar 20 21:00", "VfB Stuttgart", "Atlético Madrid", 35.7, 25.8, 38.5], ["Champions League", "Mie 21 18:45", "Como", "Man. United", 13.6, 20.8, 65.6], ["Champions League", "Mie 21 18:45", "Lille", "Galatasaray", 54.7, 23.8, 21.5], ["Champions League", "Mie 21 21:00", "Aston Villa", "Viking FK", 79.5, 15.0, 5.5], ["Champions League", "Mie 21 21:00", "Bayern", "Arsenal", 41.5, 25.7, 32.8], ["Champions League", "Mie 21 21:00", "Club Brugge", "Lens", 54.7, 23.8, 21.5], ["Champions League", "Mie 21 21:00", "Inter", "Shakhtar Donetsk", 81.1, 14.2, 4.7], ["Champions League", "Mie 21 21:00", "Real Betis", "Feyenoord Rotterdam", 54.7, 23.8, 21.5], ["Champions League", "Mie 21 21:00", "Real Madrid", "RB Leipzig", 73.7, 17.7, 8.6], ["Champions League", "Mie 21 21:00", "Sporting CP", "LASK Linz", 79.5, 15.0, 5.5], ["Europa League", "Jue 22 18:45", "Ararat-Armenia", "AZ Alkmaar", 15.4, 21.7, 63.0], ["Europa League", "Jue 22 18:45", "Dinamo Zagreb", "NEC Nijmegen", 53.3, 24.1, 22.6], ["Europa League", "Jue 22 18:45", "Ferencvaros", "Torreense", 68.0, 20.0, 12.0], ["Europa League", "Jue 22 18:45", "Juventus", "Stade Rennais", 69.2, 19.5, 11.3], ["Europa League", "Jue 22 18:45", "Lech Poznan", "Sunderland", 47.4, 25.1, 27.5], ["Europa League", "Jue 22 18:45", "OFI Crete", "Leverkusen", 10.5, 19.1, 70.4], ["Europa League", "Jue 22 18:45", "SK Sturm Graz", "Marsella", 31.5, 25.6, 42.9], ["Europa League", "Jue 22 18:45", "Union St.-Gilloise", "Hapoel Be'er", 79.5, 15.0, 5.5], ["Europa League", "Jue 22 21:00", "AFC Bournemouth", "AC Milan", 47.4, 25.1, 27.5], ["Europa League", "Jue 22 21:00", "Besiktas", "Crystal Palace", 37.1, 25.8, 37.1], ["Europa League", "Jue 22 21:00", "Celtic", "Celta Vigo", 51.8, 24.4, 23.8], ["Europa League", "Jue 22 21:00", "Jagiellonia Bialystok", "Anderlecht", 41.5, 25.7, 32.8], ["Europa League", "Jue 22 21:00", "Lillestrom", "Real Sociedad", 19.3, 23.2, 57.5], ["Europa League", "Jue 22 21:00", "NK Celje", "RB Salzburg", 28.8, 25.3, 45.9], ["Europa League", "Jue 22 21:00", "Olympiacos", "Sparta Prague", 58.9, 22.8, 18.3], ["Europa League", "Jue 22 21:00", "Omonia Nicosia", "Benfica", 16.3, 22.1, 61.7], ["Europa League", "Jue 22 21:00", "TSG Hoffenheim", "Lyon", 47.4, 25.1, 27.5], ["Europa League", "Jue 22 21:00", "Viktoria Plzen", "Levski Sofia", 70.4, 19.1, 10.5], ["Conference League", "Jue 22 16:30", "Kairat Almaty", "Panathinaikos", 41.5, 25.7, 32.8], ["Conference League", "Jue 22 18:45", "FC Nordsjælland", "CSKA Sofia", 65.6, 20.8, 13.6], ["Conference League", "Jue 22 18:45", "Getafe", "FC Lugano", 65.6, 20.8, 13.6], ["Conference League", "Jue 22 18:45", "Iberia 1999", "Mjällby AIF", 28.8, 25.3, 45.9], ["Conference League", "Jue 22 18:45", "Inter D'Escaldes", "CSU Craiova", 21.5, 23.8, 54.7], ["Conference League", "Jue 22 18:45", "Jablonec", "Brighton & Hove Albion", 17.3, 22.4, 60.3], ["Conference League", "Jue 22 18:45", "Kauno Zalgiris", "SK Brann", 23.8, 24.4, 51.8], ["Conference League", "Jue 22 18:45", "Pafos", "Riga FC", 65.6, 20.8, 13.6], ["Conference League", "Jue 22 18:45", "Red Star Belgrade", "F.C. København", 71.5, 18.6, 9.9], ["Conference League", "Jue 22 18:45", "Trabzonspor", "Heart of Midlothian", 64.3, 21.2, 14.5], ["Conference League", "Jue 22 21:00", "AGF", "Egnatia", 65.6, 20.8, 13.6], ["Conference League", "Jue 22 21:00", "Ajax Amsterdam", "Atalanta", 38.5, 25.8, 35.7], ["Conference League", "Jue 22 21:00", "Monaco", "Friburgo", 54.7, 23.8, 21.5], ["Conference League", "Jue 22 21:00", "Borac Banja Luka", "KuPS Kuopio", 51.8, 24.4, 23.8], ["Conference League", "Jue 22 21:00", "Braga", "KAA Gent", 66.8, 20.4, 12.8], ["Conference League", "Jue 22 21:00", "FC Midtjylland", "Sint-Truidense", 68.0, 20.0, 12.0], ["Conference League", "Jue 22 21:00", "FC Thun", "Hajduk Split", 42.9, 25.6, 31.5], ["Conference League", "Jue 22 21:00", "Lincoln Red Imps", "FC Twente", 9.9, 18.6, 71.5]];
+var HD={"total": {"n": 0}, "pendientes": 58, "desde": "2026-10-19", "ligas": {}, "dias": [], "lista": [{"d": "2026-10-22", "l": "Europa League", "h": "Ararat-Armenia", "a": "AZ Alkmaar", "s": "Más de 1,5 goles", "sp": 75.1, "q": "Gana Ararat-Armenia", "qp": 40.0, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Europa League", "h": "Dinamo Zagreb", "a": "NEC Nijmegen", "s": "Doble oportunidad: Dinamo Zagreb o empate", "sp": 90.1, "q": "Gana Dinamo Zagreb", "qp": 71.5, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Europa League", "h": "Ferencvaros", "a": "Torreense", "s": "Doble oportunidad: Ferencvaros o empate", "sp": 88.0, "q": "Gana Ferencvaros", "qp": 68.0, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Europa League", "h": "Juventus", "a": "Stade Rennais", "s": "Doble oportunidad: Juventus o empate", "sp": 97.8, "q": "Gana Juventus", "qp": 86.7, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Europa League", "h": "Lech Poznan", "a": "Sunderland", "s": "Doble oportunidad: Lech Poznan o empate", "sp": 88.0, "q": "Gana Lech Poznan", "qp": 68.0, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Europa League", "h": "OFI Crete", "a": "Leverkusen", "s": "Doble oportunidad: OFI Crete o empate", "sp": 80.7, "q": "Gana OFI Crete", "qp": 57.5, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Europa League", "h": "SK Sturm Graz", "a": "Marsella", "s": "Doble oportunidad: SK Sturm Graz o empate", "sp": 90.1, "q": "Gana SK Sturm Graz", "qp": 71.5, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Europa League", "h": "Union St.-Gilloise", "a": "Hapoel Be'er", "s": "Doble oportunidad: Union St.-Gilloise o empate", "sp": 94.5, "q": "Gana Union St.-Gilloise", "qp": 79.5, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Europa League", "h": "AFC Bournemouth", "a": "AC Milan", "s": "Doble oportunidad: AFC Bournemouth o empate", "sp": 97.0, "q": "Gana AFC Bournemouth", "qp": 84.8, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Europa League", "h": "Besiktas", "a": "Crystal Palace", "s": "Doble oportunidad: Besiktas o empate", "sp": 92.0, "q": "Gana Besiktas", "qp": 74.7, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Europa League", "h": "Celtic", "a": "Celta Vigo", "s": "Doble oportunidad: Celtic o empate", "sp": 93.1, "q": "Gana Celtic", "qp": 76.7, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Europa League", "h": "Jagiellonia Bialystok", "a": "Anderlecht", "s": "Doble oportunidad: Jagiellonia Bialystok o empate", "sp": 86.4, "q": "Gana Jagiellonia Bialystok", "qp": 65.6, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Europa League", "h": "Lillestrom", "a": "Real Sociedad", "s": "Doble oportunidad: Lillestrom o empate", "sp": 78.5, "q": "Gana Lillestrom", "qp": 54.7, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Europa League", "h": "NK Celje", "a": "RB Salzburg", "s": "Doble oportunidad: NK Celje o empate", "sp": 80.7, "q": "Gana NK Celje", "qp": 57.5, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Europa League", "h": "Olympiacos", "a": "Sparta Prague", "s": "Doble oportunidad: Olympiacos o empate", "sp": 94.1, "q": "Gana Olympiacos", "qp": 78.6, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Europa League", "h": "Omonia Nicosia", "a": "Benfica", "s": "Doble oportunidad: Omonia Nicosia o empate", "sp": 82.7, "q": "Gana Omonia Nicosia", "qp": 60.3, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Europa League", "h": "TSG Hoffenheim", "a": "Lyon", "s": "Doble oportunidad: TSG Hoffenheim o empate", "sp": 95.3, "q": "Gana TSG Hoffenheim", "qp": 81.1, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Europa League", "h": "Viktoria Plzen", "a": "Levski Sofia", "s": "Doble oportunidad: Viktoria Plzen o empate", "sp": 89.5, "q": "Gana Viktoria Plzen", "qp": 70.4, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Conference League", "h": "Kairat Almaty", "a": "Panathinaikos", "s": "Doble oportunidad: Kairat Almaty o empate", "sp": 84.7, "q": "Gana Kairat Almaty", "qp": 63.0, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Conference League", "h": "FC Nordsjælland", "a": "CSKA Sofia", "s": "Doble oportunidad: FC Nordsjælland o empate", "sp": 86.4, "q": "Gana FC Nordsjælland", "qp": 65.6, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Conference League", "h": "Getafe", "a": "FC Lugano", "s": "Doble oportunidad: Getafe o empate", "sp": 93.1, "q": "Gana Getafe", "qp": 76.7, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Conference League", "h": "Iberia 1999", "a": "Mjällby AIF", "s": "Doble oportunidad: Iberia 1999 o Mjällby AIF", "sp": 74.7, "q": "Gana Mjällby AIF", "qp": 45.9, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Conference League", "h": "Inter D'Escaldes", "a": "CSU Craiova", "s": "Doble oportunidad: empate o CSU Craiova", "sp": 78.5, "q": "Gana CSU Craiova", "qp": 54.7, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Conference League", "h": "Jablonec", "a": "Brighton & Hove Albion", "s": "Doble oportunidad: Jablonec o empate", "sp": 78.5, "q": "Gana Jablonec", "qp": 54.7, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Conference League", "h": "Kauno Zalgiris", "a": "SK Brann", "s": "Más de 1,5 goles", "sp": 75.1, "q": "Gana Kauno Zalgiris", "qp": 40.0, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Conference League", "h": "Pafos", "a": "Riga FC", "s": "Doble oportunidad: Pafos o empate", "sp": 86.4, "q": "Gana Pafos", "qp": 65.6, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Conference League", "h": "Red Star Belgrade", "a": "F.C. København", "s": "Doble oportunidad: Red Star Belgrade o empate", "sp": 90.1, "q": "Gana Red Star Belgrade", "qp": 71.5, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Conference League", "h": "Trabzonspor", "a": "Heart of Midlothian", "s": "Doble oportunidad: Trabzonspor o empate", "sp": 90.1, "q": "Gana Trabzonspor", "qp": 71.5, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Conference League", "h": "AGF", "a": "Egnatia", "s": "Doble oportunidad: AGF o empate", "sp": 86.4, "q": "Gana AGF", "qp": 65.6, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Conference League", "h": "Ajax Amsterdam", "a": "Atalanta", "s": "Doble oportunidad: Ajax Amsterdam o empate", "sp": 94.9, "q": "Gana Ajax Amsterdam", "qp": 80.3, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Conference League", "h": "Monaco", "a": "Friburgo", "s": "Doble oportunidad: Monaco o empate", "sp": 95.7, "q": "Gana Monaco", "qp": 81.9, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Conference League", "h": "Borac Banja Luka", "a": "KuPS Kuopio", "s": "Doble oportunidad: Borac Banja Luka o empate", "sp": 76.2, "q": "Gana Borac Banja Luka", "qp": 51.8, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Conference League", "h": "Braga", "a": "KAA Gent", "s": "Doble oportunidad: Braga o empate", "sp": 95.7, "q": "Gana Braga", "qp": 81.9, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Conference League", "h": "FC Midtjylland", "a": "Sint-Truidense", "s": "Doble oportunidad: FC Midtjylland o empate", "sp": 92.0, "q": "Gana FC Midtjylland", "qp": 74.7, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Conference League", "h": "FC Thun", "a": "Hajduk Split", "s": "Doble oportunidad: FC Thun o empate", "sp": 80.7, "q": "Gana FC Thun", "qp": 57.5, "r": null, "so": null, "qo": null}, {"d": "2026-10-22", "l": "Conference League", "h": "Lincoln Red Imps", "a": "FC Twente", "s": "Doble oportunidad: empate o FC Twente", "sp": 76.2, "q": "Gana FC Twente", "qp": 51.8, "r": null, "so": null, "qo": null}, {"d": "2026-10-21", "l": "Champions League", "h": "Como", "a": "Man. United", "s": "Doble oportunidad: empate o Man. United", "sp": 86.4, "q": "Gana Man. United", "qp": 65.6, "r": null, "so": null, "qo": null}, {"d": "2026-10-21", "l": "Champions League", "h": "Lille", "a": "Galatasaray", "s": "Doble oportunidad: Lille o empate", "sp": 96.4, "q": "Gana Lille", "qp": 83.4, "r": null, "so": null, "qo": null}, {"d": "2026-10-21", "l": "Champions League", "h": "Aston Villa", "a": "Viking FK", "s": "Doble oportunidad: Aston Villa o empate", "sp": 97.8, "q": "Gana Aston Villa", "qp": 86.7, "r": null, "so": null, "qo": null}, {"d": "2026-10-21", "l": "Champions League", "h": "Bayern", "a": "Arsenal", "s": "Doble oportunidad: Bayern o empate", "sp": 99.6, "q": "Gana Bayern", "qp": 91.9, "r": null, "so": null, "qo": null}, {"d": "2026-10-21", "l": "Champions League", "h": "Club Brugge", "a": "Lens", "s": "Doble oportunidad: Club Brugge o empate", "sp": 96.4, "q": "Gana Club Brugge", "qp": 83.4, "r": null, "so": null, "qo": null}, {"d": "2026-10-21", "l": "Champions League", "h": "Inter", "a": "Shakhtar Donetsk", "s": "Doble oportunidad: Inter o empate", "sp": 99.5, "q": "Gana Inter", "qp": 91.5, "r": null, "so": null, "qo": null}, {"d": "2026-10-21", "l": "Champions League", "h": "Real Betis", "a": "Feyenoord Rotterdam", "s": "Doble oportunidad: Real Betis o empate", "sp": 96.7, "q": "Gana Real Betis", "qp": 84.1, "r": null, "so": null, "qo": null}, {"d": "2026-10-21", "l": "Champions League", "h": "Real Madrid", "a": "RB Leipzig", "s": "Doble oportunidad: Real Madrid o empate", "sp": 99.6, "q": "Gana Real Madrid", "qp": 91.9, "r": null, "so": null, "qo": null}, {"d": "2026-10-21", "l": "Champions League", "h": "Sporting CP", "a": "LASK Linz", "s": "Doble oportunidad: Sporting CP o empate", "sp": 98.2, "q": "Gana Sporting CP", "qp": 87.8, "r": null, "so": null, "qo": null}, {"d": "2026-10-20", "l": "Champions League", "h": "Fenerbahce", "a": "Slavia Prague", "s": "Doble oportunidad: Fenerbahce o empate", "sp": 95.7, "q": "Gana Fenerbahce", "qp": 81.9, "r": null, "so": null, "qo": null}, {"d": "2026-10-20", "l": "Champions League", "h": "Sabah FK", "a": "Dortmund", "s": "Más de 1,5 goles", "sp": 75.1, "q": "Gana Sabah FK", "qp": 48.9, "r": null, "so": null, "qo": null}, {"d": "2026-10-20", "l": "Champions League", "h": "AS Roma", "a": "Slovan Bratislava", "s": "Doble oportunidad: AS Roma o empate", "sp": 97.0, "q": "Gana AS Roma", "qp": 84.8, "r": null, "so": null, "qo": null}, {"d": "2026-10-20", "l": "Champions League", "h": "FC Porto", "a": "PSV Eindhoven", "s": "Doble oportunidad: FC Porto o empate", "sp": 97.0, "q": "Gana FC Porto", "qp": 84.8, "r": null, "so": null, "qo": null}, {"d": "2026-10-20", "l": "Champions League", "h": "Liverpool", "a": "Villarreal", "s": "Doble oportunidad: Liverpool o empate", "sp": 99.6, "q": "Gana Liverpool", "qp": 91.9, "r": null, "so": null, "qo": null}, {"d": "2026-10-20", "l": "Champions League", "h": "Man. City", "a": "AEK Athens", "s": "Doble oportunidad: Man. City o empate", "sp": 99.6, "q": "Gana Man. City", "qp": 91.9, "r": null, "so": null, "qo": null}, {"d": "2026-10-20", "l": "Champions League", "h": "Napoli", "a": "Bodo/Glimt", "s": "Doble oportunidad: Napoli o empate", "sp": 97.8, "q": "Gana Napoli", "qp": 86.7, "r": null, "so": null, "qo": null}, {"d": "2026-10-20", "l": "Champions League", "h": "PSG", "a": "Barcelona", "s": "Doble oportunidad: PSG o empate", "sp": 99.6, "q": "Gana PSG", "qp": 91.9, "r": null, "so": null, "qo": null}, {"d": "2026-10-20", "l": "Champions League", "h": "VfB Stuttgart", "a": "Atlético Madrid", "s": "Doble oportunidad: VfB Stuttgart o empate", "sp": 96.7, "q": "Gana VfB Stuttgart", "qp": 84.1, "r": null, "so": null, "qo": null}, {"d": "2026-10-19", "l": "Serie A", "h": "Monza", "a": "Cagliari", "s": "Menos de 3,5 goles", "sp": 78.9, "q": "Gana Monza", "qp": 41.8, "r": null, "so": null, "qo": null}, {"d": "2026-10-19", "l": "Serie A", "h": "Parma", "a": "Torino", "s": "Menos de 3,5 goles", "sp": 77.9, "q": "Gana Torino", "qp": 38.9, "r": null, "so": null, "qo": null}, {"d": "2026-10-19", "l": "Premier League", "h": "Tottenham", "a": "Coventry", "s": "Más de 1,5 goles", "sp": 76.0, "q": "Gana Tottenham", "qp": 47.5, "r": null, "so": null, "qo": null}, {"d": "2026-10-19", "l": "La Liga", "h": "Getafe", "a": "Rayo", "s": "Menos de 3,5 goles", "sp": 90.7, "q": "Gana Getafe", "qp": 41.0, "r": null, "so": null, "qo": null}]};
+var TN=[{"l": "ATP", "t": "Almaty Open", "h": "Mar 20 08:30", "d": "2026-10-20", "a": "Rinky Hijikata", "b": "Terence Atmane", "p": 52.4, "w": ["Gana Rinky Hijikata", 52.4], "s": ["Rinky Hijikata gana al menos un set", 76.6], "ea": 965, "eb": 948, "fu": "ranking", "imp": false}, {"l": "ATP", "t": "Almaty Open", "h": "Mar 20 08:30", "d": "2026-10-20", "a": "Roman Safiullin", "b": "Sho Shimabukuro", "p": 57.6, "w": ["Gana Roman Safiullin", 57.6], "s": ["Roman Safiullin gana al menos un set", 79.8], "ea": 986, "eb": 933, "fu": "ranking", "imp": false}, {"l": "ATP", "t": "Almaty Open", "h": "Mar 20 10:00", "d": "2026-10-20", "a": "Aleksandar Kovacevic", "b": "Stefanos Tsitsipas", "p": 37.1, "w": ["Gana Stefanos Tsitsipas", 62.9], "s": ["Stefanos Tsitsipas gana al menos un set", 82.9], "ea": 970, "eb": 1062, "fu": "ranking", "imp": false}, {"l": "ATP", "t": "Almaty Open", "h": "Mar 20 16:30", "d": "2026-10-20", "a": "Karen Khachanov", "b": "Rei Sakamoto", "p": 77.5, "w": ["Gana Karen Khachanov", 77.5], "s": ["Karen Khachanov gana al menos un set", 90.6], "ea": 1122, "eb": 906, "fu": "ranking", "imp": false}, {"l": "ATP", "t": "Almaty Open", "h": "Mie 21 06:00", "d": "2026-10-21", "a": "Andrey Rublev", "b": "Adrian Mannarino", "p": 71.4, "w": ["Gana Andrey Rublev", 71.4], "s": ["Andrey Rublev gana al menos un set", 87.5], "ea": 1135, "eb": 976, "fu": "ranking", "imp": false}, {"l": "ATP", "t": "Almaty Open", "h": "Mie 21 06:00", "d": "2026-10-21", "a": "Luciano Darderi", "b": "James Duckworth", "p": 70.5, "w": ["Gana Luciano Darderi", 70.5], "s": ["Luciano Darderi gana al menos un set", 87.1], "ea": 1134, "eb": 982, "fu": "ranking", "imp": false}, {"l": "ATP", "t": "Almaty Open", "h": "Mie 21 06:00", "d": "2026-10-21", "a": "Nikoloz Basilashvili", "b": "Facundo Diaz Acosta", "p": 38.4, "w": ["Gana Facundo Diaz Acosta", 61.6], "s": ["Facundo Diaz Acosta gana al menos un set", 82.2], "ea": 903, "eb": 985, "fu": "ranking", "imp": false}, {"l": "ATP", "t": "Almaty Open", "h": "Mie 21 06:00", "d": "2026-10-21", "a": "Tomas Martin Etcheverry", "b": "Mattia Bellucci", "p": 63.9, "w": ["Gana Tomas Martin Etcheverry", 63.9], "s": ["Tomas Martin Etcheverry gana al menos un set", 83.5], "ea": 1088, "eb": 989, "fu": "ranking", "imp": false}, {"l": "ATP", "t": "BNP Paribas Fortis European Open", "h": "Mar 20 11:30", "d": "2026-10-20", "a": "Juan Manuel Cerundolo", "b": "Mariano Navone", "p": 47.0, "w": ["Gana Mariano Navone", 53.0], "s": ["Mariano Navone gana al menos un set", 77.0], "ea": 1020, "eb": 1041, "fu": "ranking", "imp": false}, {"l": "ATP", "t": "BNP Paribas Fortis European Open", "h": "Mar 20 13:00", "d": "2026-10-20", "a": "Marcos Giron", "b": "Jan-Lennard Struff", "p": 43.3, "w": ["Gana Jan-Lennard Struff", 56.7], "s": ["Jan-Lennard Struff gana al menos un set", 79.3], "ea": 962, "eb": 1009, "fu": "ranking", "imp": false}, {"l": "ATP", "t": "BNP Paribas Fortis European Open", "h": "Mar 20 16:00", "d": "2026-10-20", "a": "Hugo Gaston", "b": "Jacob Fearnley", "p": 48.6, "w": ["Gana Jacob Fearnley", 51.4], "s": ["Jacob Fearnley gana al menos un set", 76.0], "ea": 954, "eb": 964, "fu": "ranking", "imp": false}, {"l": "ATP", "t": "BNP Paribas Fortis European Open", "h": "Mar 20 18:00", "d": "2026-10-20", "a": "Zizou Bergs", "b": "Toby Samuel", "p": 63.8, "w": ["Gana Zizou Bergs", 63.8], "s": ["Zizou Bergs gana al menos un set", 83.5], "ea": 1049, "eb": 951, "fu": "ranking", "imp": false}, {"l": "ATP", "t": "BNP Paribas Fortis European Open", "h": "Mar 20 19:30", "d": "2026-10-20", "a": "Raphael Collignon", "b": "Nishesh Basavareddy", "p": 67.3, "w": ["Gana Raphael Collignon", 67.3], "s": ["Raphael Collignon gana al menos un set", 85.4], "ea": 1017, "eb": 892, "fu": "ranking", "imp": false}, {"l": "ATP", "t": "BNP Paribas Fortis European Open", "h": "Mie 21 06:00", "d": "2026-10-21", "a": "Damir Dzumhur", "b": "Dino Prizmic", "p": 52.3, "w": ["Gana Damir Dzumhur", 52.3], "s": ["Damir Dzumhur gana al menos un set", 76.5], "ea": 970, "eb": 954, "fu": "ranking", "imp": false}, {"l": "ATP", "t": "BNP Paribas Fortis European Open", "h": "Mie 21 06:00", "d": "2026-10-21", "a": "Francisco Cerundolo", "b": "Martin Damm", "p": 76.2, "w": ["Gana Francisco Cerundolo", 76.2], "s": ["Francisco Cerundolo gana al menos un set", 89.9], "ea": 1138, "eb": 935, "fu": "ranking", "imp": false}, {"l": "ATP", "t": "BNP Paribas Fortis European Open", "h": "Mie 21 06:00", "d": "2026-10-21", "a": "Jaume Munar", "b": "Arthur Fils", "p": 26.6, "w": ["Gana Arthur Fils", 73.4], "s": ["Arthur Fils gana al menos un set", 88.5], "ea": 1021, "eb": 1197, "fu": "ranking", "imp": false}, {"l": "WTA", "t": "BNB Ningbo Open", "h": "Mar 20 07:00", "d": "2026-10-20", "a": "Alycia Parks", "b": "Sara Bejlek", "p": 39.2, "w": ["Gana Sara Bejlek", 60.8], "s": ["Sara Bejlek gana al menos un set", 81.7], "ea": 1018, "eb": 1094, "fu": "ranking", "imp": false}, {"l": "WTA", "t": "BNB Ningbo Open", "h": "Mar 20 07:00", "d": "2026-10-20", "a": "Diana Shnaider", "b": "Yulia Putintseva", "p": 70.3, "w": ["Gana Diana Shnaider", 70.3], "s": ["Diana Shnaider gana al menos un set", 86.9], "ea": 1165, "eb": 1015, "fu": "ranking", "imp": false}, {"l": "WTA", "t": "BNB Ningbo Open", "h": "Mar 20 08:30", "d": "2026-10-20", "a": "Anhelina Kalinina", "b": "Jasmine Paolini", "p": 43.9, "w": ["Gana Jasmine Paolini", 56.1], "s": ["Jasmine Paolini gana al menos un set", 78.9], "ea": 1032, "eb": 1075, "fu": "ranking", "imp": false}, {"l": "WTA", "t": "BNB Ningbo Open", "h": "Mar 20 08:30", "d": "2026-10-20", "a": "Polina Kudermetova", "b": "Cristina Bucsa", "p": 38.1, "w": ["Gana Cristina Bucsa", 61.9], "s": ["Cristina Bucsa gana al menos un set", 82.4], "ea": 974, "eb": 1058, "fu": "ranking", "imp": false}, {"l": "WTA", "t": "BNB Ningbo Open", "h": "Mar 20 10:00", "d": "2026-10-20", "a": "Belinda Bencic", "b": "Jelena Ostapenko", "p": 56.9, "w": ["Gana Belinda Bencic", 56.9], "s": ["Belinda Bencic gana al menos un set", 79.4], "ea": 1165, "eb": 1116, "fu": "ranking", "imp": false}, {"l": "WTA", "t": "BNB Ningbo Open", "h": "Mar 20 11:30", "d": "2026-10-20", "a": "Daria Snigur", "b": "Katarzyna Kawa", "p": 66.0, "w": ["Gana Daria Snigur", 66.0], "s": ["Daria Snigur gana al menos un set", 84.7], "ea": 1056, "eb": 941, "fu": "ranking", "imp": false}, {"l": "WTA", "t": "BNB Ningbo Open", "h": "Mie 21 06:00", "d": "2026-10-21", "a": "Aliaksandra Sasnovich", "b": "Leylah Fernandez", "p": 29.2, "w": ["Gana Leylah Fernandez", 70.8], "s": ["Leylah Fernandez gana al menos un set", 87.2], "ea": 945, "eb": 1099, "fu": "ranking", "imp": false}, {"l": "WTA", "t": "BNB Ningbo Open", "h": "Mie 21 06:00", "d": "2026-10-21", "a": "Iga Swiatek", "b": "Marie Bouzkova", "p": 67.9, "w": ["Gana Iga Swiatek", 67.9], "s": ["Iga Swiatek gana al menos un set", 85.7], "ea": 1238, "eb": 1108, "fu": "ranking", "imp": false}, {"l": "WTA", "t": "Kinoshita Group Japan Open", "h": "Mar 20 04:30", "d": "2026-10-20", "a": "Zhang Shuai", "b": "Tereza Valentova", "p": 51.2, "w": ["Gana Zhang Shuai", 51.2], "s": ["Zhang Shuai gana al menos un set", 75.8], "ea": 1001, "eb": 993, "fu": "ranking", "imp": false}, {"l": "WTA", "t": "Kinoshita Group Japan Open", "h": "Mar 20 04:30", "d": "2026-10-20", "a": "Emerson Jones", "b": "Ann Li", "p": 26.9, "w": ["Gana Ann Li", 73.1], "s": ["Ann Li gana al menos un set", 88.4], "ea": 936, "eb": 1109, "fu": "ranking", "imp": false}, {"l": "WTA", "t": "Kinoshita Group Japan Open", "h": "Mar 20 04:30", "d": "2026-10-20", "a": "Magda Linette", "b": "Claire Liu", "p": 53.0, "w": ["Gana Magda Linette", 53.0], "s": ["Magda Linette gana al menos un set", 76.9], "ea": 1006, "eb": 985, "fu": "ranking", "imp": false}, {"l": "WTA", "t": "Kinoshita Group Japan Open", "h": "Mar 20 05:30", "d": "2026-10-20", "a": "Himeno Sakatsume", "b": "Katie Boulter", "p": 40.6, "w": ["Gana Katie Boulter", 59.4], "s": ["Katie Boulter gana al menos un set", 80.9], "ea": 960, "eb": 1026, "fu": "ranking", "imp": false}, {"l": "WTA", "t": "Kinoshita Group Japan Open", "h": "Mar 20 06:00", "d": "2026-10-20", "a": "Mary Stoiana", "b": "Oleksandra Oliynykova", "p": 41.0, "w": ["Gana Oleksandra Oliynykova", 59.0], "s": ["Oleksandra Oliynykova gana al menos un set", 80.7], "ea": 960, "eb": 1023, "fu": "ranking", "imp": false}, {"l": "WTA", "t": "Kinoshita Group Japan Open", "h": "Mar 20 06:00", "d": "2026-10-20", "a": "Antonia Ruzic", "b": "Paula Badosa", "p": 45.4, "w": ["Gana Paula Badosa", 54.6], "s": ["Paula Badosa gana al menos un set", 78.0], "ea": 991, "eb": 1023, "fu": "ranking", "imp": false}, {"l": "WTA", "t": "Kinoshita Group Japan Open", "h": "Mar 20 07:30", "d": "2026-10-20", "a": "Kimberly Birrell", "b": "Kayla Day", "p": 65.1, "w": ["Gana Kimberly Birrell", 65.1], "s": ["Kimberly Birrell gana al menos un set", 84.2], "ea": 1056, "eb": 948, "fu": "ranking", "imp": false}, {"l": "WTA", "t": "Kinoshita Group Japan Open", "h": "Mar 20 07:30", "d": "2026-10-20", "a": "Zeynep Sonmez", "b": "Maya Joint", "p": 53.8, "w": ["Gana Zeynep Sonmez", 53.8], "s": ["Zeynep Sonmez gana al menos un set", 77.5], "ea": 1018, "eb": 991, "fu": "ranking", "imp": false}, {"l": "WTA", "t": "Kinoshita Group Japan Open", "h": "Mar 20 08:30", "d": "2026-10-20", "a": "Peyton Stearns", "b": "Katerina Siniakova", "p": 58.8, "w": ["Gana Peyton Stearns", 58.8], "s": ["Peyton Stearns gana al menos un set", 80.6], "ea": 1061, "eb": 999, "fu": "ranking", "imp": false}, {"l": "WTA", "t": "Kinoshita Group Japan Open", "h": "Mie 21 06:00", "d": "2026-10-21", "a": "Ashlyn Krueger", "b": "Lanlana Tararudee", "p": 49.8, "w": ["Gana Lanlana Tararudee", 50.2], "s": ["Lanlana Tararudee gana al menos un set", 75.1], "ea": 1030, "eb": 1031, "fu": "ranking", "imp": false}, {"l": "WTA", "t": "Kinoshita Group Japan Open", "h": "Mie 21 06:00", "d": "2026-10-21", "a": "Sinja Kraus", "b": "Talia Gibson", "p": 42.9, "w": ["Gana Talia Gibson", 57.1], "s": ["Talia Gibson gana al menos un set", 79.5], "ea": 1006, "eb": 1056, "fu": "ranking", "imp": false}];
+var BK=[{"l": "Euroliga", "a": "Hapoel Tel Aviv", "b": "Virtus Bolonia", "p": 74.7, "m": 7.5, "t": 175, "w": ["Gana Hapoel Tel Aviv", 74.7], "s": ["Más de 160,5 puntos", 85.3], "o": ["160,5", 85.3], "u": ["189,5", 84.6], "h": "Mie 21 18:00", "d": "2026-10-21"}, {"l": "Euroliga", "a": "Anadolu Efes", "b": "Besiktas", "p": 57.6, "m": 2.1, "t": 175, "w": ["Gana Anadolu Efes", 57.6], "s": ["Menos de 190,5 puntos", 85.9], "o": ["160,5", 85.7], "u": ["190,5", 85.9], "h": "Jue 22 19:30", "d": "2026-10-22"}, {"l": "Euroliga", "a": "Bayern", "b": "Dubai Basketball", "p": 56.4, "m": 1.8, "t": 171, "w": ["Gana Bayern", 56.4], "s": ["Más de 156,5 puntos", 85.3], "o": ["156,5", 85.3], "u": ["185,5", 84.6], "h": "Jue 22 20:00", "d": "2026-10-22"}, {"l": "Euroliga", "a": "Maccabi Tel Aviv", "b": "Real Madrid", "p": 44.6, "m": -1.5, "t": 179, "w": ["Gana Real Madrid", 55.4], "s": ["Más de 164,5 puntos", 85.0], "o": ["164,5", 85.0], "u": ["193,5", 84.9], "h": "Jue 22 20:05", "d": "2026-10-22"}, {"l": "Euroliga", "a": "Panathinaikos", "b": "Baskonia", "p": 80.6, "m": 9.9, "t": 175, "w": ["Gana Panathinaikos", 80.6], "s": ["Más de 160,5 puntos", 85.3], "o": ["160,5", 85.3], "u": ["189,5", 84.6], "h": "Jue 22 20:15", "d": "2026-10-22"}, {"l": "Euroliga", "a": "Olimpia Milano", "b": "Barcelona", "p": 51.6, "m": 0.5, "t": 173, "w": ["Gana Olimpia Milano", 51.6], "s": ["Más de 157,5 puntos", 85.9], "o": ["157,5", 85.9], "u": ["187,5", 85.7], "h": "Jue 22 20:30", "d": "2026-10-22"}, {"l": "Euroliga", "a": "Partizan", "b": "Crvena Zvezda", "p": 54.2, "m": 1.2, "t": 166, "w": ["Gana Partizan", 54.2], "s": ["Más de 151,5 puntos", 85.0], "o": ["151,5", 85.0], "u": ["180,5", 85.0], "h": "Jue 22 20:45", "d": "2026-10-22"}, {"l": "Euroliga", "a": "Zalgiris", "b": "ASVEL", "p": 77.5, "m": 8.6, "t": 170, "w": ["Gana Zalgiris", 77.5], "s": ["Menos de 184,5 puntos", 85.4], "o": ["155,5", 84.6], "u": ["184,5", 85.4], "h": "Vie 23 19:00", "d": "2026-10-23"}, {"l": "Euroliga", "a": "Olympiacos", "b": "Fenerbahce", "p": 73.9, "m": 7.2, "t": 168, "w": ["Gana Olympiacos", 73.9], "s": ["Más de 152,5 puntos", 85.9], "o": ["152,5", 85.9], "u": ["182,5", 85.7], "h": "Vie 23 20:15", "d": "2026-10-23"}, {"l": "Euroliga", "a": "Paris Basketball", "b": "Valencia", "p": 45.7, "m": -1.2, "t": 180, "w": ["Gana Valencia", 54.3], "s": ["Más de 165,5 puntos", 85.7], "o": ["165,5", 85.7], "u": ["194,5", 84.2], "h": "Vie 23 20:45", "d": "2026-10-23"}, {"l": "NBA", "a": "Pistons", "b": "Celtics", "p": 61.4, "m": 2.9, "t": 219, "w": ["Gana Pistons", 61.4], "s": ["Más de 199,5 puntos", 85.5], "o": ["199,5", 85.5], "u": ["237,5", 85.4], "h": "Mar 20 21:00", "d": "2026-10-20"}, {"l": "NBA", "a": "Knicks", "b": "76ers", "p": 75.8, "m": 7.1, "t": 221, "w": ["Gana Knicks", 75.8], "s": ["Menos de 239,5 puntos", 85.0], "o": ["202,5", 84.6], "u": ["239,5", 85.0], "h": "Mie 21 01:00", "d": "2026-10-21"}, {"l": "NBA", "a": "Spurs", "b": "Thunder", "p": 68.9, "m": 4.9, "t": 220, "w": ["Gana Spurs", 68.9], "s": ["Menos de 239,5 puntos", 85.7], "o": ["201,5", 85.2], "u": ["239,5", 85.7], "h": "Mie 21 03:30", "d": "2026-10-21"}, {"l": "NBA", "a": "Magic", "b": "Hawks", "p": 65.5, "m": 4.0, "t": 223, "w": ["Gana Magic", 65.5], "s": ["Más de 203,5 puntos", 85.5], "o": ["203,5", 85.5], "u": ["241,5", 85.4], "h": "Jue 22 01:00", "d": "2026-10-22"}, {"l": "NBA", "a": "Wizards", "b": "Bucks", "p": 57.4, "m": 1.8, "t": 235, "w": ["Gana Wizards", 57.4], "s": ["Menos de 253,5 puntos", 84.9], "o": ["216,5", 84.7], "u": ["253,5", 84.9], "h": "Jue 22 01:00", "d": "2026-10-22"}, {"l": "NBA", "a": "Heat", "b": "Timberwolves", "p": 63.9, "m": 3.5, "t": 240, "w": ["Gana Heat", 63.9], "s": ["Menos de 259,5 puntos", 85.5], "o": ["221,5", 85.4], "u": ["259,5", 85.5], "h": "Jue 22 01:30", "d": "2026-10-22"}, {"l": "NBA", "a": "Nets", "b": "Hornets", "p": 46.8, "m": -0.8, "t": 223, "w": ["Gana Hornets", 53.2], "s": ["Más de 203,5 puntos", 85.7], "o": ["203,5", 85.7], "u": ["241,5", 85.2], "h": "Jue 22 01:30", "d": "2026-10-22"}, {"l": "NBA", "a": "Raptors", "b": "Bulls", "p": 78.4, "m": 8.0, "t": 235, "w": ["Gana Raptors", 78.4], "s": ["Más de 216,5 puntos", 84.8], "o": ["216,5", 84.8], "u": ["253,5", 84.8], "h": "Jue 22 01:30", "d": "2026-10-22"}, {"l": "NBA", "a": "Grizzlies", "b": "Jazz", "p": 63.2, "m": 3.4, "t": 242, "w": ["Gana Grizzlies", 63.2], "s": ["Más de 222,5 puntos", 85.5], "o": ["222,5", 85.5], "u": ["260,5", 85.4], "h": "Jue 22 02:00", "d": "2026-10-22"}, {"l": "NBA", "a": "Pelicans", "b": "Pacers", "p": 73.4, "m": 6.3, "t": 237, "w": ["Gana Pelicans", 73.4], "s": ["Menos de 255,5 puntos", 85.0], "o": ["218,5", 84.6], "u": ["255,5", 85.0], "h": "Jue 22 02:00", "d": "2026-10-22"}, {"l": "NBA", "a": "Rockets", "b": "Mavericks", "p": 81.7, "m": 9.3, "t": 231, "w": ["Gana Rockets", 81.7], "s": ["Menos de 250,5 puntos", 85.5], "o": ["212,5", 85.4], "u": ["250,5", 85.5], "h": "Jue 22 02:30", "d": "2026-10-22"}, {"l": "NBA", "a": "Lakers", "b": "Warriors", "p": 67.3, "m": 4.5, "t": 219, "w": ["Gana Lakers", 67.3], "s": ["Menos de 237,5 puntos", 84.9], "o": ["200,5", 84.7], "u": ["237,5", 84.9], "h": "Jue 22 04:00", "d": "2026-10-22"}, {"l": "NBA", "a": "Trail Blazers", "b": "Suns", "p": 69.2, "m": 5.0, "t": 221, "w": ["Gana Trail Blazers", 69.2], "s": ["Más de 202,5 puntos", 85.0], "o": ["202,5", 85.0], "u": ["239,5", 84.6], "h": "Jue 22 04:00", "d": "2026-10-22"}, {"l": "NBA", "a": "Clippers", "b": "Kings", "p": 82.7, "m": 9.7, "t": 227, "w": ["Gana Clippers", 82.7], "s": ["Menos de 245,5 puntos", 85.0], "o": ["208,5", 84.6], "u": ["245,5", 85.0], "h": "Jue 22 04:30", "d": "2026-10-22"}, {"l": "NBA", "a": "76ers", "b": "Cavaliers", "p": 60.0, "m": 2.5, "t": 221, "w": ["Gana 76ers", 60.0], "s": ["Menos de 239,5 puntos", 85.1], "o": ["202,5", 84.5], "u": ["239,5", 85.1], "h": "Vie 23 01:00", "d": "2026-10-23"}, {"l": "NBA", "a": "Thunder", "b": "Nuggets", "p": 70.0, "m": 5.3, "t": 228, "w": ["Gana Thunder", 70.0], "s": ["Menos de 247,5 puntos", 85.6], "o": ["209,5", 85.3], "u": ["247,5", 85.6], "h": "Vie 23 03:30", "d": "2026-10-23"}, {"l": "NBA", "a": "Bucks", "b": "Bulls", "p": 56.9, "m": 1.7, "t": 235, "w": ["Gana Bucks", 56.9], "s": ["Más de 216,5 puntos", 85.0], "o": ["216,5", 85.0], "u": ["253,5", 84.6], "h": "Vie 23 22:00", "d": "2026-10-23"}, {"l": "NBA", "a": "Celtics", "b": "Knicks", "p": 66.1, "m": 4.2, "t": 221, "w": ["Gana Celtics", 66.1], "s": ["Menos de 240,5 puntos", 85.6], "o": ["202,5", 85.3], "u": ["240,5", 85.6], "h": "Sab 24 01:00", "d": "2026-10-24"}, {"l": "NBA", "a": "Hornets", "b": "Hawks", "p": 61.1, "m": 2.8, "t": 224, "w": ["Gana Hornets", 61.1], "s": ["Más de 205,5 puntos", 85.1], "o": ["205,5", 85.1], "u": ["242,5", 84.5], "h": "Sab 24 01:00", "d": "2026-10-24"}, {"l": "NBA", "a": "Pacers", "b": "Mavericks", "p": 63.2, "m": 3.3, "t": 240, "w": ["Gana Pacers", 63.2], "s": ["Más de 221,5 puntos", 85.1], "o": ["221,5", 85.1], "u": ["258,5", 84.5], "h": "Sab 24 01:00", "d": "2026-10-24"}, {"l": "NBA", "a": "Magic", "b": "Timberwolves", "p": 66.7, "m": 4.3, "t": 221, "w": ["Gana Magic", 66.7], "s": ["Menos de 240,5 puntos", 85.5], "o": ["202,5", 85.4], "u": ["240,5", 85.5], "h": "Sab 24 01:00", "d": "2026-10-24"}, {"l": "NBA", "a": "Wizards", "b": "Raptors", "p": 32.8, "m": -4.4, "t": 235, "w": ["Gana Raptors", 67.2], "s": ["Menos de 253,5 puntos", 85.1], "o": ["216,5", 84.4], "u": ["253,5", 85.1], "h": "Sab 24 01:00", "d": "2026-10-24"}, {"l": "NBA", "a": "Heat", "b": "Pistons", "p": 52.6, "m": 0.6, "t": 234, "w": ["Gana Heat", 52.6], "s": ["Menos de 253,5 puntos", 85.6], "o": ["215,5", 85.3], "u": ["253,5", 85.6], "h": "Sab 24 02:00", "d": "2026-10-24"}, {"l": "NBA", "a": "Spurs", "b": "Rockets", "p": 75.6, "m": 7.0, "t": 218, "w": ["Gana Spurs", 75.6], "s": ["Menos de 237,5 puntos", 85.7], "o": ["199,5", 85.2], "u": ["237,5", 85.7], "h": "Sab 24 03:30", "d": "2026-10-24"}, {"l": "NBA", "a": "Jazz", "b": "Pelicans", "p": 54.1, "m": 1.0, "t": 240, "w": ["Gana Jazz", 54.1], "s": ["Menos de 258,5 puntos", 84.9], "o": ["221,5", 84.7], "u": ["258,5", 84.9], "h": "Sab 24 03:30", "d": "2026-10-24"}, {"l": "NBA", "a": "Warriors", "b": "Grizzlies", "p": 75.8, "m": 7.1, "t": 232, "w": ["Gana Warriors", 75.8], "s": ["Más de 212,5 puntos", 85.7], "o": ["212,5", 85.7], "u": ["250,5", 85.2], "h": "Sab 24 04:00", "d": "2026-10-24"}, {"l": "NBA", "a": "Lakers", "b": "Clippers", "p": 62.4, "m": 3.1, "t": 219, "w": ["Gana Lakers", 62.4], "s": ["Más de 200,5 puntos", 84.9], "o": ["200,5", 84.9], "u": ["237,5", 84.7], "h": "Sab 24 04:00", "d": "2026-10-24"}, {"l": "NBA", "a": "Kings", "b": "Trail Blazers", "p": 38.2, "m": -3.0, "t": 225, "w": ["Gana Trail Blazers", 61.8], "s": ["Más de 205,5 puntos", 85.5], "o": ["205,5", 85.5], "u": ["243,5", 85.4], "h": "Sab 24 04:00", "d": "2026-10-24"}, {"l": "NBA", "a": "Hornets", "b": "Heat", "p": 62.4, "m": 3.1, "t": 236, "w": ["Gana Hornets", 62.4], "s": ["Más de 217,5 puntos", 85.0], "o": ["217,5", 85.0], "u": ["254,5", 84.6], "h": "Dom 25 00:00", "d": "2026-10-25"}, {"l": "NBA", "a": "Cavaliers", "b": "Nets", "p": 80.9, "m": 9.0, "t": 224, "w": ["Gana Cavaliers", 80.9], "s": ["Más de 204,5 puntos", 85.7], "o": ["204,5", 85.7], "u": ["242,5", 85.2], "h": "Dom 25 01:30", "d": "2026-10-25"}, {"l": "NBA", "a": "76ers", "b": "Bucks", "p": 81.1, "m": 9.0, "t": 225, "w": ["Gana 76ers", 81.1], "s": ["Más de 206,5 puntos", 84.9], "o": ["206,5", 84.9], "u": ["243,5", 84.7], "h": "Dom 25 01:30", "d": "2026-10-25"}, {"l": "NBA", "a": "Bulls", "b": "Wizards", "p": 76.0, "m": 7.2, "t": 241, "w": ["Gana Bulls", 76.0], "s": ["Más de 221,5 puntos", 85.7], "o": ["221,5", 85.7], "u": ["259,5", 85.2], "h": "Dom 25 02:00", "d": "2026-10-25"}, {"l": "NBA", "a": "Mavericks", "b": "Spurs", "p": 28.9, "m": -5.6, "t": 228, "w": ["Gana Spurs", 71.1], "s": ["Menos de 247,5 puntos", 85.7], "o": ["209,5", 85.2], "u": ["247,5", 85.7], "h": "Dom 25 02:00", "d": "2026-10-25"}, {"l": "NBA", "a": "Nuggets", "b": "Pelicans", "p": 76.1, "m": 7.2, "t": 233, "w": ["Gana Nuggets", 76.1], "s": ["Más de 214,5 puntos", 84.9], "o": ["214,5", 84.9], "u": ["251,5", 84.7], "h": "Dom 25 02:00", "d": "2026-10-25"}, {"l": "NBA", "a": "Hawks", "b": "Rockets", "p": 62.8, "m": 3.3, "t": 226, "w": ["Gana Hawks", 62.8], "s": ["Más de 206,5 puntos", 85.5], "o": ["206,5", 85.5], "u": ["244,5", 85.4], "h": "Dom 25 02:30", "d": "2026-10-25"}, {"l": "NBA", "a": "Suns", "b": "Warriors", "p": 65.1, "m": 3.9, "t": 223, "w": ["Gana Suns", 65.1], "s": ["Más de 204,5 puntos", 85.1], "o": ["204,5", 85.1], "u": ["241,5", 84.4], "h": "Dom 25 03:00", "d": "2026-10-25"}, {"l": "NBA", "a": "Jazz", "b": "Lakers", "p": 47.4, "m": -0.6, "t": 229, "w": ["Gana Lakers", 52.6], "s": ["Menos de 247,5 puntos", 85.1], "o": ["210,5", 84.4], "u": ["247,5", 85.1], "h": "Dom 25 22:00", "d": "2026-10-25"}, {"l": "NBA", "a": "Nets", "b": "Pacers", "p": 65.8, "m": 4.0, "t": 233, "w": ["Gana Nets", 65.8], "s": ["Menos de 251,5 puntos", 85.1], "o": ["214,5", 84.5], "u": ["251,5", 85.1], "h": "Dom 25 23:00", "d": "2026-10-25"}, {"l": "NBA", "a": "Knicks", "b": "Magic", "p": 72.0, "m": 5.9, "t": 218, "w": ["Gana Knicks", 72.0], "s": ["Más de 199,5 puntos", 85.1], "o": ["199,5", 85.1], "u": ["236,5", 84.5], "h": "Lun 26 00:00", "d": "2026-10-26"}, {"l": "NBA", "a": "Timberwolves", "b": "Raptors", "p": 62.8, "m": 3.2, "t": 228, "w": ["Gana Timberwolves", 62.8], "s": ["Más de 209,5 puntos", 85.1], "o": ["209,5", 85.1], "u": ["246,5", 84.5], "h": "Lun 26 00:00", "d": "2026-10-26"}, {"l": "NBA", "a": "Thunder", "b": "Clippers", "p": 74.9, "m": 6.8, "t": 226, "w": ["Gana Thunder", 74.9], "s": ["Más de 206,5 puntos", 85.6], "o": ["206,5", 85.6], "u": ["244,5", 85.3], "h": "Lun 26 00:00", "d": "2026-10-26"}, {"l": "NBA", "a": "76ers", "b": "Pistons", "p": 50.7, "m": 0.2, "t": 218, "w": ["Gana 76ers", 50.7], "s": ["Más de 199,5 puntos", 84.8], "o": ["199,5", 84.8], "u": ["236,5", 84.8], "h": "Lun 26 00:30", "d": "2026-10-26"}, {"l": "NBA", "a": "Kings", "b": "Grizzlies", "p": 59.1, "m": 2.3, "t": 233, "w": ["Gana Kings", 59.1], "s": ["Menos de 251,5 puntos", 84.8], "o": ["214,5", 84.8], "u": ["251,5", 84.8], "h": "Lun 26 02:00", "d": "2026-10-26"}];
+var curT="",curB="NBA";
+var open={};var APROX=true;var stake=10;
+function $(i){return document.getElementById(i)}
+function eur(x){return x.toFixed(2).replace(".",",")}
+function pc(x){return String(x).replace(".",",")}
+function ini(n){var w=n.replace(/[.]/g,"").split(" ");return (w.length>1?w.map(function(x){return x[0]}).join(""):n).slice(0,3).toUpperCase()}
+function odd(p){return Math.max(1.01,Math.round(100/p*0.94*100)/100)}
+var cache={};
+function pois(k,l){var r=Math.exp(-l);for(var i=1;i<=k;i++)r*=l/i;return r}
+function grid(lh,la){var g=[],a,b;for(a=0;a<9;a++){g[a]=[];for(b=0;b<9;b++)g[a][b]=pois(a,lh)*pois(b,la)}return g}
+function model(i){
+  if(cache[i])return cache[i];
+  var m=F[i],t1=m[4]/100,tx=m[5]/100,t2=m[6]/100,bst=null,lh,la,a,b,g,p1,px,p2,e;
+  for(lh=0.2;lh<=3.8;lh+=0.05)for(la=0.2;la<=3.8;la+=0.05){
+    g=grid(lh,la);p1=0;px=0;p2=0;
+    for(a=0;a<9;a++)for(b=0;b<9;b++){if(a>b)p1+=g[a][b];else if(a===b)px+=g[a][b];else p2+=g[a][b]}
+    e=(p1-t1)*(p1-t1)+(px-tx)*(px-tx)+(p2-t2)*(p2-t2);
+    if(!bst||e<bst.e)bst={e:e,lh:lh,la:la};
+  }
+  g=grid(bst.lh,bst.la);var sc=[0,0,0],o25=0,bt=0;
+  for(a=0;a<9;a++)for(b=0;b<9;b++){if(g[a][b]>sc[2])sc=[a,b,g[a][b]];if(a+b>=3)o25+=g[a][b];if(a>0&&b>0)bt+=g[a][b]}
+  return cache[i]={lh:bst.lh,la:bst.la,sc:sc,o25:o25*100,bt:bt*100,g:g};
+}
+function mrow(l,p,hi,col){return '<div class="mk'+(hi?' hi':'')+'"><div class="ml"><span>'+l+'</span><span>'+pc(p.toFixed(0))+'% · +'+eur(stake*(odd(p)-1))+' €</span></div><div class="mb"><i style="width:'+p+'%;background:'+col+'"></i></div></div>'}
+function scen(md,k,ov,bt){
+  var g=md.g,best=null,a,b;
+  for(a=0;a<9;a++)for(b=0;b<9;b++){
+    if((a>b?0:a===b?1:2)!==k||(a+b>=3)!==ov||(a>0&&b>0)!==bt)continue;
+    if(!best||g[a][b]>best[2])best=[a,b,g[a][b]];
+  }
+  return best;
+}
+function conf(x){return x>=75?"Muy probable":x>=60?"Probable":x>=45?"Posible":"Poco probable"}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
+function prow(l,x,hi,col){return '<div class="pr mk'+(hi?' hi':'')+'"><div class="ml"><span>'+l+'</span><span>'+pc(x.toFixed(0))+'%</span></div><div class="mb"><i style="width:'+x+'%;background:'+col+'"></i></div></div>'}
+function quien(i){var m=F[i],ps=[m[4],m[5],m[6]],k=ps.indexOf(Math.max.apply(null,ps));return [["gana "+m[2],"empate","gana "+m[3]][k],ps[k],k]}
+function detail(i){
+  var m=F[i],md=model(i),ps=[m[4],m[5],m[6]],q=quien(i),mx=q[1],k=q[2];
+  var hc=C[m[2]]||"#444",ac=C[m[3]]||"#444";
+  var ov=md.o25>=50,bt=md.bt>=50;
+  if(k===1&&ov)bt=true;
+  if(k!==1&&!ov)bt=false;
+  var sc=scen(md,k,ov,bt)||md.sc,tot=sc[0]+sc[1],cd=cards(i),sp=safe(i);
+  var h='<div class="vd"><small>Pronóstico del modelo</small><b>'+cap(q[0])+'</b><span>'+conf(mx)+' · '+pc(mx.toFixed(0))+'%</span></div>';
+  h+='<div class="ex">Quiere decir que, de cada 100 partidos como este, se espera que en unos '+Math.round(mx)+' pase esto. Nunca es seguro.</div>';
+  h+='<div class="sc"><div class="bd" style="background:'+hc+'">'+ini(m[2])+'</div><div class="n">'+sc[0]+' – '+sc[1]+'</div><div class="bd" style="background:'+ac+'">'+ini(m[3])+'</div></div>';
+  h+='<div class="scs">Marcador más probable ('+tot+(tot===1?' gol':' goles')+' en total). Acertar el resultado exacto es difícil: solo un '+pc((sc[2]*100).toFixed(0))+'%.</div>';
+  h+='<h3>¿Quién gana?</h3>'+prow('Gana '+m[2],ps[0],k===0,hc)+prow('Empate',ps[1],k===1,'#8A968D')+prow('Gana '+m[3],ps[2],k===2,ac);
+  h+='<h3>Goles</h3><div class="say">Se esperan unos <b>'+pc((md.lh+md.la).toFixed(1))+' goles</b> en total: '+pc(md.lh.toFixed(1))+' de '+m[2]+' y '+pc(md.la.toFixed(1))+' de '+m[3]+'.</div>';
+  h+=prow('Tres o más goles en el partido',md.o25,ov,'var(--pitch)')+prow('Dos goles o menos',100-md.o25,!ov,'var(--pitch)');
+  h+=prow('Marcan los dos equipos',md.bt,bt,'var(--pitch)')+prow('Algún equipo se queda sin marcar',100-md.bt,!bt,'var(--pitch)');
+  h+='<h3>Tarjetas, faltas y córners</h3><div class="tl"><div><b>🟨 '+pc(cd.e.toFixed(1))+'</b>amarillas</div><div><b>🦶 '+pc(cd.f.toFixed(0))+'</b>faltas</div><div><b>🚩 '+pc(cd.c.toFixed(1))+'</b>córners</div></div>';
+  h+='<div class="say" style="margin-top:8px">Son los totales esperados entre los dos equipos'+(cd.riv?'. Es un partido de <b>rivalidad</b>, así que he sumado un 15 % de amarillas (suposición mía)':'')+'.</div>';
+  h+=prow('Cuatro o más amarillas',cd.o,cd.o>=50,'#C9A200');
+  h+='<div style="color:var(--muted);font-size:12px;margin-top:4px">Se calculan con la media de cada equipo en sus últimos 30 partidos ('+cd.src+'). No tengo datos del árbitro ni de lesiones.</div>';
+  h+='<div class="mny"><b>Apuesta más segura:</b> '+sp[0]+' ('+pc(sp[1].toFixed(0))+'%). Si sale, con '+eur(stake)+' € ganarías unos <b>+'+eur(stake*(odd(sp[1])-1))+' €</b> (cuota estimada). Si falla, pierdes lo que pongas.</div>';
+  return h;
+}
+function cards(i){
+  var m=F[i],A=AV[m[0]]||[4,24,10],h=ST[m[2]],a=ST[m[3]];
+  var y=(h?h[0]:A[0]/2)+(a?a[0]:A[0]/2),f=(h?h[1]:A[1]/2)+(a?a[1]:A[1]/2),c=(h?h[2]:A[2]/2)+(a?a[2]:A[2]/2);
+  var riv=RIV.indexOf(m[2]+"|"+m[3])>=0||RIV.indexOf(m[3]+"|"+m[2])>=0;
+  if(riv){y*=1.15;f*=1.08}
+  var q=0,k;for(k=0;k<4;k++)q+=pois(k,y);
+  var miss=[];if(!h)miss.push(m[2]);if(!a)miss.push(m[3]);
+  return {e:y,f:f,c:c,o:(1-q)*100,riv:riv,src:miss.length?"sin datos de "+miss.join(" y ")+", uso la media de la liga":"con datos de los dos equipos"};
+}
+function plan(i){
+  var m=F[i],md=model(i),ps=[m[4],m[5],m[6]],mx=Math.max.apply(null,ps),k=ps.indexOf(mx);
+  var ov=md.o25>=50,bt=md.bt>=50;
+  if(k===1&&ov)bt=true;
+  if(k!==1&&!ov)bt=false;
+  var c=[[["Gana "+m[2],"Empate","Gana "+m[3]][k],mx],[ov?"Más de 2,5 goles":"Menos de 2,5 goles",ov?md.o25:100-md.o25],[bt?"Ambos marcan: sí":"Ambos marcan: no",bt?md.bt:100-md.bt]];
+  c.sort(function(a,b){return b[1]-a[1]});
+  return c[0];
+}
+
+var cur="La Liga",LG=["La Liga","Premier League","Serie A","Bundesliga","Ligue 1"];
+function safe(i){
+  var m=F[i],md=model(i),p=[m[4],m[5],m[6]],g=md.g,o15=0,u35=0,a,b;
+  for(a=0;a<9;a++)for(b=0;b<9;b++){if(a+b>=2)o15+=g[a][b];if(a+b<=3)u35+=g[a][b]}
+  var c=[["Doble oportunidad: "+m[2]+" o empate",p[0]+p[1]],["Doble oportunidad: empate o "+m[3],p[1]+p[2]],["Doble oportunidad: "+m[2]+" o "+m[3],p[0]+p[2]],["Más de 1,5 goles",o15*100],["Menos de 3,5 goles",u35*100]];
+  var pl=plan(i);c.push([pl[0],pl[1]]);
+  c.sort(function(x,y){return y[1]-x[1]});
+  return c[0];
+}
+function bold(i){
+  var m=F[i],md=model(i),p=[m[4],m[5],m[6]];
+  var c=[["Gana "+m[2],p[0]],["Empate",p[1]],["Gana "+m[3],p[2]],["Más de 2,5 goles",md.o25],["Menos de 2,5 goles",100-md.o25],["Ambos marcan: sí",md.bt],["Ambos marcan: no",100-md.bt]];
+  c=c.filter(function(x){return x[1]>=38&&x[1]<=58});
+  c.sort(function(x,y){return y[1]-x[1]});
+  return c[0]||null;
+}
+function card(i){
+  var m=F[i],hc=C[m[2]]||"#444",ac=C[m[3]]||"#444";
+  var h='<div class="c'+(open[i]?" open":"")+'" id="c'+i+'"><div class="hd" data-t="'+i+'" style="background:linear-gradient(105deg,'+hc+' 0 46%,#1b1b1b 46% 54%,'+ac+' 54% 100%)"><div class="bd">'+ini(m[2])+'</div><div class="vs">'+m[1]+'</div><div class="bd">'+ini(m[3])+'</div></div>';
+  h+='<div class="nm" data-t="'+i+'"><span>'+m[2]+'</span><span>'+m[3]+'</span></div>';
+  if(m[4]===null)return h+'<div class="live">Sin pronóstico: faltan datos de uno de los equipos.</div></div>';
+  h+='<div class="bar"><i style="width:'+m[4]+'%;background:'+hc+'"></i><i style="width:'+m[5]+'%;background:#8A968D"></i><i style="width:'+m[6]+'%;background:'+ac+'"></i></div>';
+  h+='<div class="pc"><span><b>'+pc(m[4])+'%</b> local</span><span><b>'+pc(m[5])+'%</b> empate</span><span><b>'+pc(m[6])+'%</b> visitante</span></div>';
+  var qq=quien(i);
+  h+='<div class="hl">Pronóstico: <b>'+qq[0]+'</b> · '+conf(qq[1])+' ('+pc(qq[1].toFixed(0))+'%)</div>';
+  var sp=safe(i);
+  h+='<div class="bp"><div><small>Apuesta más segura (la que más se cumple)</small><b>'+sp[0]+'</b></div><div class="r2"><b>'+pc(sp[1].toFixed(0))+'%</b><small>de acierto</small></div></div>';
+  h+='<div class="dt">'+(open[i]?detail(i):"")+'</div></div>';
+  return h;
+}
+var LM={"La Liga":["España","LL","#D63A1F","#F2A900"],"Premier League":["Inglaterra","PL","#3D195B","#B13BD6"],"Serie A":["Italia","SA","#0B5FA5","#2AA1E0"],"Bundesliga":["Alemania","BL","#B8102B","#E8452C"],"Ligue 1":["Francia","L1","#1B2A6B","#3F6FD8"]};
+function crest(t,col,w){return '<svg width="'+w+'" height="'+Math.round(w*1.16)+'" viewBox="0 0 48 56"><path d="M24 2 L44 9 V28 C44 42 34 51 24 54 C14 51 4 42 4 28 V9 Z" fill="'+col+'" stroke="rgba(255,255,255,.9)" stroke-width="2.5"/><path d="M24 2 L44 9 V28 C44 42 34 51 24 54 Z" fill="rgba(255,255,255,.12)"/><text x="24" y="34" text-anchor="middle" fill="#fff" font-family="system-ui,sans-serif" font-weight="800" font-size="17">'+t+'</text></svg>'}
+function renderFb(){
+  var c="";
+  LG.forEach(function(l){var n=F.filter(function(m){return m[0]===l}).length,x=LM[l];c+='<button class="lt" data-l="'+l+'" aria-pressed="'+(l===cur)+'" style="background:linear-gradient(150deg,'+x[2]+','+x[3]+')">'+crest(x[1],x[2],42)+'<b>'+l+'</b><small>'+n+(n===1?' partido':' partidos')+'</small></button>'});
+  $("lg").innerHTML=c;
+  var x=LM[cur],n=F.filter(function(m){return m[0]===cur}).length;
+  var h='<div class="lbn" style="background:linear-gradient(110deg,'+x[2]+','+x[3]+')">'+crest(x[1],x[2],52)+'<div><b>'+cur+'</b><small>'+x[0]+' · '+n+(n===1?' partido':' partidos')+' en los próximos días</small></div></div>';
+  var any=false;F.forEach(function(m,i){if(m[0]===cur){h+=card(i);any=true}});
+  $("fb").innerHTML=any?h:h+'<div class="empty">No hay partidos de esta liga en los próximos días.</div>';
+}
+
+function combo(items){
+  var jp=1,od=1;items.forEach(function(x){jp*=x.p/100;od*=odd(x.p)});
+  return {jp:jp*100,od:od,win:stake*(od-1)};
+}
+function badge(n){return '<i style="background:'+(C[n]||hcol(n))+'">'+ini(n)+'</i>'}
+function ticket(cls,icon,title,sub,items,warn){
+  var c=combo(items),R=34,L=2*Math.PI*R,dash=Math.max(2,L*Math.min(c.jp,100)/100);
+  var h='<div class="tk '+cls+'"><div class="tkh"><div class="ring"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="'+R+'" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="8"/><circle cx="40" cy="40" r="'+R+'" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-dasharray="'+dash.toFixed(1)+' '+L.toFixed(1)+'" transform="rotate(-90 40 40)"/></svg><span>'+pc(c.jp.toFixed(c.jp<10?1:0))+'%</span></div><div class="tkt"><b>'+icon+' '+title+'</b><small>'+sub+'</small></div></div>';
+  items.forEach(function(x,k){
+    h+='<div class="leg"><div class="num">'+(k+1)+'</div><div class="bds">'+badge(x.A)+badge(x.B)+'</div><div class="lgt"><b>'+x.l+'</b><small>'+x.m+' · '+x.h+'</small><div class="pb"><i style="width:'+Math.min(x.p,100)+'%"></i></div></div><span class="pp">'+pc(x.p.toFixed(0))+'%</span></div>';
+  });
+  h+='<div class="prize"><div><small>Cuota estimada</small><b>'+pc(c.od.toFixed(2))+'</b></div><div class="big"><small>Con '+eur(stake)+' € ganarías</small><b>+'+eur(c.win)+' €</b></div><div><small>Probabilidad</small><b>'+pc(c.jp.toFixed(c.jp<10?1:0))+'%</b></div></div>';
+  return h+'<div class="warn">'+warn+'</div></div>';
+}
+var EURN=["Champions League","Europa League","Conference League"];
+function seccion(titulo,icono,grad,ids,tipo){
+  var h='<div class="eb" style="background:'+grad+'"><div class="tr">'+icono+'</div><div><b>'+titulo+'</b><small>'+ids.length+' partidos con pronóstico</small></div></div>';
+  if(ids.length<2)return h+'<div class="empty">Hay muy pocos partidos para armar combinadas ahora mismo.</div>';
+  var s=ids.map(function(i){var x=safe(i);return {i:i,A:F[i][2],B:F[i][3],h:F[i][1],m:F[i][2]+" – "+F[i][3],l:x[0],p:x[1]}}).sort(function(a,b){return b.p-a.p}).slice(0,3);
+  var b=[];ids.forEach(function(i){var x=bold(i);if(x)b.push({i:i,A:F[i][2],B:F[i][3],h:F[i][1],m:F[i][2]+" – "+F[i][3],l:x[0],p:x[1]})});
+  b.sort(function(a,b2){return b2.p-a.p});b=b.slice(0,5);
+  var extra=(tipo==="eu"&&APROX)?" Las predicciones europeas usan valoraciones aproximadas: fíate aún menos.":"";
+  h+=ticket("safe","🛡️","Combinada más segura","Las "+s.length+" apuestas más probables, de partidos distintos",s,"No es segura: hay que acertar todas, y cada apuesta que añades baja la probabilidad. Se asume que los partidos no se influyen entre sí."+extra);
+  if(b.length>=2)h+=ticket("loka","🎲","Combinada loka","Apuestas de probabilidad media: premio alto, casi nunca sale",b,"Es la que más pierde a la larga. Para divertirse con una cantidad pequeña, no para ganar dinero."+extra);
+  return h;
+}
+var HIST='<div class="note"><b>Cómo de fiable es, según el historial.</b> Probado con 1.600 partidos de LaLiga: la apuesta más segura de cada partido acertó un 80 % (la web decía un 82 %), y cuando decía más de un 90 % acertó un 86 %. La combinada segura de cada semana salió 91 de 148 semanas (61 %; la web decía un 68 %) y la loka, 3 de 148 (2 %; la web decía un 5,5 %). Solo está probado en LaLiga; las competiciones europeas usan otro método (valoraciones Elo) y no están probadas. Acertar a menudo no es ganar dinero: las combinadas pagan según lo que prometen, no según lo que aciertan.</div>';
+var SDB={"NBA":18,"Euroliga":14};
+function ncdf(z){var q=1/(1+0.2316419*Math.abs(z)),d=0.3989423*Math.exp(-z*z/2),p=d*q*(0.3193815+q*(-0.3565638+q*(1.781478+q*(-1.821256+q*1.330274))));return z>0?1-p:p}
+function itBk(){
+  var s=[],b=[];
+  BK.forEach(function(m){
+    if(m.p===null||m.p===undefined)return;
+    var base={A:m.a,B:m.b,h:m.h,m:m.a+" – "+m.b,g:"b"};
+    s.push(Object.assign({},base,{l:m.s[0],p:m.s[1]}));
+    var L=Math.floor(m.t)+0.5,po=(1-ncdf((L-m.t)/(SDB[m.l]||16)))*100,pf=Math.max(m.p,100-m.p),op=[];
+    op.push({l:m.w[0],p:m.w[1]});op.push({l:"Más de "+pc(L)+" puntos",p:po});op.push({l:"Menos de "+pc(L)+" puntos",p:100-po});
+    op=op.filter(function(x){return x.p>=38&&x.p<=58}).sort(function(x,y){return y.p-x.p});
+    if(op.length)b.push(Object.assign({},base,op[0]));
+  });
+  return {s:s,b:b};
+}
+function itTn(){
+  var s=[],b=[];
+  TN.forEach(function(m){
+    if(m.p===null||m.p===undefined)return;
+    var base={A:m.a,B:m.b,h:m.h,m:m.a+" – "+m.b,g:"t"};
+    s.push(Object.assign({},base,{l:m.s[0],p:m.s[1]}));
+    if(m.w[1]>=50&&m.w[1]<=68)b.push(Object.assign({},base,{l:m.w[0],p:m.w[1]}));
+  });
+  return {s:s,b:b};
+}
+function itFb(){
+  var s=[],b=[],i;
+  for(i=0;i<F.length;i++){
+    if(F[i][4]===null)continue;
+    var base={A:F[i][2],B:F[i][3],h:F[i][1],m:F[i][2]+" – "+F[i][3],g:"f"},x=safe(i),y=bold(i);
+    s.push(Object.assign({},base,{l:x[0],p:x[1]}));
+    if(y)b.push(Object.assign({},base,{l:y[0],p:y[1]}));
+  }
+  return {s:s,b:b};
+}
+function byP(a,b){return b.p-a.p}
+function seccionGen(titulo,icono,grad,sf,lk,nota){
+  var n=sf.length;
+  var h='<div class="eb" style="background:'+grad+'"><div class="tr">'+icono+'</div><div><b>'+titulo+'</b><small>'+n+(n===1?' partido':' partidos')+' con pronóstico</small></div></div>';
+  if(n<2)return h+'<div class="empty">Hay muy pocos partidos para armar combinadas ahora mismo.</div>';
+  var s=sf.slice().sort(byP).slice(0,3);
+  var b=lk.slice().sort(byP).slice(0,4);
+  h+=ticket("safe","🛡️","Combinada más segura","Las "+s.length+" apuestas más probables, de partidos distintos",s,"No es segura: hay que acertar todas, y cada apuesta que añades baja la probabilidad."+nota);
+  if(b.length>=2)h+=ticket("loka","🎲","Combinada loka","Apuestas de probabilidad media: premio alto, casi nunca sale",b,"Es la que más pierde a la larga. Para divertirse con una cantidad pequeña, no para ganar dinero."+nota);
+  return h;
+}
+function mejorPorDeporte(lista){
+  var out=[];["f","b","t"].forEach(function(g){
+    var x=lista.filter(function(y){return y.g===g}).sort(byP)[0];if(x)out.push(x)});
+  return out;
+}
+function seccionMixta(fb,bk,tn){
+  var sf=mejorPorDeporte(fb.s.concat(bk.s,tn.s)),h;
+  var lk=mejorPorDeporte(fb.b.concat(bk.b,tn.b)),resto=fb.b.concat(bk.b,tn.b).filter(function(x){return lk.indexOf(x)<0}).sort(byP);
+  if(resto.length&&lk.length<4)lk.push(resto[0]);
+  lk.sort(byP);
+  var deportes=sf.map(function(x){return {f:"fútbol",b:"baloncesto",t:"tenis"}[x.g]}).join(", ");
+  h='<div class="eb" style="background:linear-gradient(110deg,#7A1FA2,#E8590C 55%,#F2A900)"><div class="tr">🌍</div><div><b>Combinadas mixtas</b><small>'+(deportes||"sin partidos")+'</small></div></div>';
+  if(sf.length<2)return h+'<div class="empty">Hace falta partidos de al menos dos deportes para armar una mixta.</div>';
+  h+=ticket("safe","🛡️","Mixta más segura","La apuesta más probable de cada deporte",sf,"No es segura: hay que acertar todas. Mezcla deportes, pero cada pata sigue pudiendo fallar.");
+  if(lk.length>=2)h+=ticket("loka","🎲","Mixta loka","Una apuesta de probabilidad media de cada deporte",lk,"Es la que más pierde a la larga. Para divertirse con una cantidad pequeña, no para ganar dinero.");
+  return h;
+}
+function renderCombos(){
+  var lig=[],eu=[],i;
+  for(i=0;i<F.length;i++){if(F[i][4]===null)continue;if(EURN.indexOf(F[i][0])>=0)eu.push(i);else lig.push(i)}
+  var fb=itFb(),bk=itBk(),tn=itTn();
+  $("cb").innerHTML=HIST+
+    seccion("Combinadas de las ligas","⚽","linear-gradient(110deg,#0F5132,#1F9D63)",lig,"lig")+
+    seccion("Combinadas europeas","🏆","linear-gradient(110deg,#0B1F5C,#2B5BD7)",eu,"eu")+
+    seccionGen("Combinadas de baloncesto","🏀","linear-gradient(110deg,#C8451A,#1D428A)",bk.s,bk.b,"")+
+    seccionGen("Combinadas de tenis","🎾","linear-gradient(110deg,#0B6E4F,#7A1FA2)",tn.s,tn.b," Supongo partidos al mejor de 3 sets.")+
+    seccionMixta(fb,bk,tn);
+}
+$("lg").onclick=function(e){var t=e.target.closest("[data-l]");if(!t)return;cur=t.dataset.l;renderFb()};
+function alternar(e){
+  var tg=e.target.closest("[data-t]");
+  if(tg){var i=+tg.dataset.t;if(F[i][4]===null)return;open[i]=!open[i];$("c"+i).outerHTML=card(i)}
+}
+$("fb").onclick=alternar;
+var curEu=null;
+$("eu").onclick=function(e){var t=e.target.closest("[data-e]");if(t){curEu=t.dataset.e;renderEuropa();return}alternar(e)};
+var EUR=[
+ {k:"Champions League",pre:"UEFA",nom:"Champions League",g:["#0A1A55","#2D5BE3"],cup:["#EAF0FF","#8EA7EE"],txt:"La máxima competición de clubes de Europa"},
+ {k:"Europa League",pre:"UEFA",nom:"Europa League",g:["#B8400A","#F59E0B"],cup:["#FFE2A8","#F29A0E"],txt:"La segunda competición de clubes de Europa"},
+ {k:"Conference League",pre:"UEFA",nom:"Conference League",g:["#055E45","#2FCB8E"],cup:["#C9F8E1","#2FBF84"],txt:"La tercera competición de clubes de Europa"}];
+function trophy(c,w,id){
+  return '<svg width="'+w+'" height="'+Math.round(w*1.25)+'" viewBox="0 0 64 80"><defs><linearGradient id="tg'+id+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+c[0]+'"/><stop offset="1" stop-color="'+c[1]+'"/></linearGradient></defs>'
+  +'<path d="M18 13 H8 C8 27 13 33 21 35" fill="none" stroke="url(#tg'+id+')" stroke-width="4" stroke-linecap="round"/><path d="M46 13 H56 C56 27 51 33 43 35" fill="none" stroke="url(#tg'+id+')" stroke-width="4" stroke-linecap="round"/>'
+  +'<path d="M17 6 H47 V27 C47 40 40 47 32 48 C24 47 17 40 17 27 Z" fill="url(#tg'+id+')"/>'
+  +'<path d="M22 10 H27 V27 C27 36 29 41 32 44 C25 41 22 36 22 27 Z" fill="rgba(255,255,255,.45)"/>'
+  +'<rect x="29" y="48" width="6" height="13" fill="url(#tg'+id+')"/><path d="M19 62 H45 L48 73 H16 Z" fill="url(#tg'+id+')"/><rect x="16" y="72" width="32" height="4" rx="2" fill="'+c[1]+'"/>'
+  +'<polygon points="32,15 34,21 40,21 35,25 37,31 32,27 27,31 29,25 24,21 30,21" fill="rgba(255,255,255,.85)"/></svg>';
+}
+function estrellas(w){
+  var s='<svg width="'+w+'" height="'+w+'" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="rgba(255,255,255,.12)"/>',k,a,x,y,pts,j,r,t;
+  for(k=0;k<12;k++){a=k*Math.PI/6-Math.PI/2;x=32+21*Math.cos(a);y=32+21*Math.sin(a);pts=[];
+    for(j=0;j<10;j++){r=j%2?1.7:4;t=j*Math.PI/5-Math.PI/2;pts.push((x+r*Math.cos(t)).toFixed(1)+","+(y+r*Math.sin(t)).toFixed(1))}
+    s+='<polygon points="'+pts.join(" ")+'" fill="#FFD43B"/>'}
+  return s+'</svg>';
+}
+function renderEuropa(){
+  var cnt={},tot=0;
+  EUR.forEach(function(e){cnt[e.k]=0});
+  F.forEach(function(m){if(cnt[m[0]]!==undefined){cnt[m[0]]++;tot++}});
+  if(!curEu||cnt[curEu]===undefined){curEu=EUR[0].k;EUR.forEach(function(e){if(cnt[curEu]===0&&cnt[e.k]>0)curEu=e.k})}
+  var h='<div class="hero" style="background:linear-gradient(120deg,#0B1F5C,#1E4FD0 60%,#3B82F6)">'+estrellas(64)+'<div><b>EUROPA</b><small>Competiciones europeas de clubes · '+tot+' partidos en los próximos días</small></div></div>';
+  if(APROX)h+='<div class="note"><b>Aviso:</b> no se pudo descargar la valoración actual de los equipos, así que estas predicciones usan valoraciones aproximadas puestas a mano. Son una orientación muy poco fiable.</div>';
+  h+='<div class="tiles">';
+  EUR.forEach(function(e,n){h+='<button class="lt" data-e="'+e.k+'" aria-pressed="'+(e.k===curEu)+'" style="width:calc(33.3% - 7px);min-width:104px;background:linear-gradient(150deg,'+e.g[0]+','+e.g[1]+')">'+trophy(e.cup,40,"t"+n)+'<small style="letter-spacing:.12em">'+e.pre+'</small><b>'+e.nom+'</b><small>'+cnt[e.k]+(cnt[e.k]===1?' partido':' partidos')+'</small></button>'});
+  h+='</div>';
+  var e=EUR.filter(function(x){return x.k===curEu})[0],n=EUR.indexOf(e);
+  h+='<div class="cbn" style="background:linear-gradient(110deg,'+e.g[0]+','+e.g[1]+')">'+trophy(e.cup,62,"b"+n)+'<div><small>Competición europea</small><b>'+e.pre+' '+e.nom+'</b><span>'+e.txt+'</span></div></div>';
+  var idx=[];F.forEach(function(m,i){if(m[0]===e.k)idx.push(i)});
+  if(!idx.length)h+='<div class="empty">No hay partidos de la '+e.nom+' programados en los próximos días.</div>';
+  var last="";
+  idx.forEach(function(i){var d=F[i][1].split(" ").slice(0,2).join(" ");if(d!==last){h+='<div class="dayh">'+d+'</div>';last=d}h+=card(i)});
+  $("eu").innerHTML=h;
+}
+var SP={"ATP":["Tenis masculino","#0B6E4F","#2FBF71","t"],"WTA":["Tenis femenino","#7A1FA2","#E040A0","t"],"NBA":["Baloncesto · EE. UU.","#C8102E","#1D428A","b"],"Euroliga":["Baloncesto · Europa","#E8590C","#1B2A6B","b"]};
+function hcol(n){var x=0,i;for(i=0;i<n.length;i++)x=(x*31+n.charCodeAt(i))%360;return "hsl("+x+",55%,38%)"}
+function ball(k,w){
+  if(k==="t")return '<svg width="'+w+'" height="'+w+'" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="#D7F34A" stroke="rgba(255,255,255,.9)" stroke-width="2.5"/><path d="M6 14c10 4 10 16 0 20M42 14c-10 4-10 16 0 20" fill="none" stroke="#fff" stroke-width="2.5"/></svg>';
+  return '<svg width="'+w+'" height="'+w+'" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="#E8812A" stroke="rgba(255,255,255,.9)" stroke-width="2.5"/><path d="M3 24h42M24 3v42M9 9c9 8 9 22 0 30M39 9c-9 8-9 22 0 30" fill="none" stroke="#3A1A05" stroke-width="2"/></svg>';
+}
+var sopen={};
+function skey(m){return m.l+"|"+m.a+"|"+m.b+"|"+m.d}
+function sCard(m,tipo){
+  var A=m.a,B=m.b,ca=hcol(A),cb=hcol(B),k=skey(m);
+  var h='<div class="c'+(sopen[k]?" open":"")+'" data-k="'+k.replace(/"/g,"")+'"><div class="hd" data-s="1" style="background:linear-gradient(105deg,'+ca+' 0 46%,#1b1b1b 46% 54%,'+cb+' 54% 100%)"><div class="bd">'+ini(A)+'</div><div class="vs">'+m.h+'</div><div class="bd">'+ini(B)+'</div></div>';
+  h+='<div class="nm" data-s="1"><span>'+A+'</span><span>'+B+'</span></div>';
+  if(m.p===null||m.p===undefined)return h+'<div class="live">Sin pronóstico: faltan datos de uno de los equipos.</div></div>';
+  h+='<div class="bar" data-s="1"><i style="width:'+m.p+'%;background:'+ca+'"></i><i style="width:'+(100-m.p).toFixed(1)+'%;background:'+cb+'"></i></div>';
+  h+='<div class="pc" data-s="1"><span><b>'+pc(m.p.toFixed(0))+'%</b> '+(tipo==="b"?"local":"")+'</span><span><b>'+pc((100-m.p).toFixed(0))+'%</b> '+(tipo==="b"?"visitante":"")+'</span></div>';
+  h+='<div class="hl">Pronóstico: <b>'+m.w[0].charAt(0).toLowerCase()+m.w[0].slice(1)+'</b> · '+conf(m.w[1])+' ('+pc(m.w[1].toFixed(0))+'%)</div>';
+  h+='<div class="bp" data-s="1"><div><small>Apuesta más segura (la que más se cumple)</small><b>'+m.s[0]+'</b></div><div class="r2"><b>'+pc(m.s[1].toFixed(0))+'%</b><small>de acierto</small></div></div>';
+  h+='<div class="dt">';
+  if(tipo==="b"){
+    var fav=m.m>=0?A:B,mg=Math.abs(m.m);
+    h+='<div class="say">Se espera que '+fav+' gane por unos <b>'+pc(mg.toFixed(0))+' puntos</b> y que se anoten unos <b>'+m.t+' puntos</b> en total.</div>';
+  }
+  h+='<div class="mny">Si sale la apuesta segura, con '+eur(stake)+' € ganarías unos <b style="color:var(--pitch)">+'+eur(stake*(odd(m.s[1])-1))+' €</b> (cuota estimada). Si falla, pierdes lo que pongas.</div>';
+  if(tipo==="t")h+='<div class="ex" style="margin-top:8px">'+m.t+'. '+(m.fu==="ranking"?'Calculado con el ranking oficial de cada jugador.':'Calculado con la valoración de cada jugador ('+m.ea+' contra '+m.eb+').')+' Supongo partido al mejor de 3 sets.</div>';
+  else h+='<div class="ex" style="margin-top:8px">Calculado con la valoración de cada equipo según sus resultados. No tengo datos de lesiones ni descansos.</div>';
+  return h+'</div></div>';
+}
+document.addEventListener("click",function(e){
+  var t=e.target.closest("[data-s]");if(!t)return;
+  var c=t.closest(".c");if(!c)return;
+  var k=c.getAttribute("data-k");sopen[k]=!sopen[k];c.classList.toggle("open")
+});
+var DECO_B='<svg class="deco" viewBox="0 0 200 120"><g fill="none" stroke="#fff" stroke-width="2"><rect x="4" y="4" width="192" height="112" rx="4"/><line x1="100" y1="4" x2="100" y2="116"/><circle cx="100" cy="60" r="18"/><rect x="4" y="38" width="36" height="44"/><rect x="160" y="38" width="36" height="44"/><path d="M40 44a18 18 0 0 1 0 32M160 44a18 18 0 0 0 0 32"/></g></svg>';
+var DECO_T='<svg class="deco" viewBox="0 0 200 120"><g fill="none" stroke="#fff" stroke-width="2"><rect x="10" y="10" width="180" height="100"/><rect x="10" y="24" width="180" height="72"/><line x1="100" y1="10" x2="100" y2="110"/><line x1="55" y1="24" x2="55" y2="96"/><line x1="145" y1="24" x2="145" y2="96"/><line x1="55" y1="60" x2="145" y2="60"/></g></svg>';
+function emblema(l,tipo){
+  if(l==="Euroliga")return '<div class="em">'+estrellas(46)+'<span class="mid">'+ball("b",22)+'</span></div>';
+  return '<div class="em">'+ball(tipo,46)+'</div>';
+}
+function renderBk(){
+  var names=["NBA","Euroliga"],n=BK.length;
+  var h='<div class="sh" style="background:linear-gradient(115deg,#C8451A,#E8812A 45%,#1D428A)">'+DECO_B+ball("b",58)+'<div><b>Baloncesto</b><small>NBA y Euroliga · '+n+(n===1?' partido':' partidos')+' en los próximos días</small></div></div>';
+  h+='<div class="spt">';
+  names.forEach(function(l){
+    var k=BK.filter(function(m){return m.l===l}).length,x=SP[l];
+    h+='<button class="sp-tile" data-l="'+l+'" aria-pressed="'+(l===curB)+'" style="background:linear-gradient(140deg,'+x[1]+','+x[2]+')">'+emblema(l,"b")+'<span class="chip">'+k+'</span><div class="txt"><b>'+l+'</b><small>'+x[0].replace("Baloncesto · ","")+'</small></div></button>';
+  });
+  h+='</div>';
+  $("nbl").innerHTML=h;
+  Array.prototype.forEach.call($("nbl").querySelectorAll(".sp-tile"),function(b){b.onclick=function(){curB=b.getAttribute("data-l");renderBk()}});
+  var x=SP[curB],ms=BK.filter(function(m){return m.l===curB});
+  var o='<div class="lbn" style="background:linear-gradient(110deg,'+x[1]+','+x[2]+')">'+ball("b",44)+'<div><b>'+curB+'</b><small>'+x[0]+' · '+ms.length+(ms.length===1?' partido':' partidos')+'</small></div></div>';
+  ms.forEach(function(m){o+=sCard(m,"b")});
+  if(!ms.length)o+='<div class="empty">No hay partidos en los próximos días, o no he podido leer el calendario. Mira registro.txt.</div>';
+  $("nb").innerHTML=o;
+}
+function renderTenis(){
+  var ks=[],seen={},n=TN.length;
+  TN.forEach(function(m){var k=m.l+"|"+m.t;if(!seen[k]){seen[k]=1;ks.push({k:k,l:m.l,t:m.t,imp:m.imp,n:0})}});
+  ks.forEach(function(x){x.n=TN.filter(function(m){return m.l+"|"+m.t===x.k}).length});
+  if(!ks.some(function(x){return x.k===curT}))curT=ks.length?ks[0].k:"";
+  var h='<div class="sh" style="background:linear-gradient(115deg,#0B6E4F,#2FBF71 50%,#7A1FA2)">'+DECO_T+ball("t",58)+'<div><b>Tenis</b><small>Torneos que se juegan ahora · '+n+(n===1?' partido':' partidos')+' con pronóstico</small></div></div>';
+  h+='<div class="spt">';
+  ks.forEach(function(x){var g=SP[x.l];h+='<button class="sp-tile" data-k="'+x.k+'" aria-pressed="'+(x.k===curT)+'" style="background:linear-gradient(140deg,'+g[1]+','+g[2]+')">'+emblema(x.l,"t")+'<span class="chip">'+x.n+'</span><div class="txt"><b>'+(x.imp?"⭐ ":"")+x.t+'</b><small>'+x.l+' · '+g[0].replace("Tenis ","")+'</small></div></button>'});
+  h+='</div>';
+  $("tnl").innerHTML=h;
+  Array.prototype.forEach.call($("tnl").querySelectorAll(".sp-tile"),function(b){b.onclick=function(){curT=b.getAttribute("data-k");renderTenis()}});
+  if(!ks.length){$("tn").innerHTML='<div class="empty">Ahora mismo no hay torneos de tenis con partidos en los próximos días, o no he podido descargar los datos. Mira registro.txt.</div>';return}
+  var cur=ks.filter(function(x){return x.k===curT})[0],g=SP[cur.l];
+  var o='<div class="lbn" style="background:linear-gradient(110deg,'+g[1]+','+g[2]+')">'+ball("t",44)+'<div><b>'+cur.t+'</b><small>'+g[0]+' · se está jugando ahora · '+cur.n+(cur.n===1?' partido':' partidos')+'</small></div></div>';
+  TN.filter(function(m){return m.l+"|"+m.t===curT}).forEach(function(m){o+=sCard(m,"t")});
+  $("tn").innerHTML=o;
+}
+function renderOther(){
+  renderTenis();
+  renderBk();
+}
+
+function dfmt(d){var p=d.split("-");return p[2]+"/"+p[1]}
+function pct(a,b){return b?Math.round(a/b*100):0}
+function renderHist(){
+  var t=HD.total||{n:0},h='';
+  h+='<div class="note" style="border-style:solid"><b>Historial real.</b> Cada día el programa guarda lo que predice <b>antes</b> de que se juegue el partido, y cuando termina comprueba solo si acertó. No se borra ni se retoca nada. Empezó el '+(HD.desde?dfmt(HD.desde):"-")+'.</div>';
+  if(!t.n){
+    h+='<div class="vd"><small>Todavía sin resultados</small><b>'+(HD.pendientes||0)+' partidos esperando</b><span>Vuelve mañana</span></div>';
+    $("hs").innerHTML=h;return;
+  }
+  h+='<div class="vd"><small>Apuesta más segura de cada partido</small><b>'+t.s_ok+' de '+t.n+' · '+pct(t.s_ok,t.n)+' %</b><span>La web prometía de media un '+pc(t.s_prom)+' %</span></div>';
+  h+='<div class="vd" style="margin-top:8px"><small>Pronóstico principal (quién gana)</small><b>'+t.q_ok+' de '+t.n+' · '+pct(t.q_ok,t.n)+' %</b><span>La web prometía de media un '+pc(t.q_prom)+' %</span></div>';
+  if(t.n<100)h+='<div class="note">Con solo '+t.n+' partidos comprobados, el porcentaje todavía puede moverse mucho por pura suerte. Cuantos más días pasen, más fiable es esta cifra. '+(HD.pendientes?HD.pendientes+' partidos más esperan resultado.':'')+'</div>';
+  h+='<h3>Por liga</h3>';
+  Object.keys(HD.ligas).forEach(function(l){var x=HD.ligas[l];h+=prow(l+' ('+x.n+' partidos)',pct(x.s_ok,x.n),false,'var(--pitch)')});
+  if(HD.dias.length){h+='<h3>Por día (apuesta más segura)</h3>';HD.dias.forEach(function(x){h+=prow(dfmt(x.d)+' · '+x.s_ok+'/'+x.n,pct(x.s_ok,x.n),false,'#2E7D5B')})}
+  h+='<h3>Últimas predicciones</h3>';
+  HD.lista.forEach(function(x){
+    var ic=x.r===null?"⏳":(x.so?"✅":"❌"),ic2=x.r===null?"⏳":(x.qo?"✅":"❌");
+    h+='<div class="m" style="padding:10px 12px"><div class="h"><span>'+x.h+' – '+x.a+'</span><span>'+(x.r===null?'pendiente':x.r[0]+' – '+x.r[1])+'</span></div>'
+     +'<div style="font-size:12px;color:var(--muted)">'+x.l+' · '+dfmt(x.d)+'</div>'
+     +'<div style="font-size:13px;margin-top:4px">'+ic+' Segura: '+x.s+' ('+pc(x.sp.toFixed(0))+'%)</div>'
+     +'<div style="font-size:13px">'+ic2+' Pronóstico: '+x.q+' ('+pc(x.qp.toFixed(0))+'%)</div></div>';
+  });
+  h+='<div class="note">Este historial es lo único que demuestra si el programa funciona. Antes de cobrar a nadie conviene tener varias semanas, no días.</div>';
+  $("hs").innerHTML=h;
+}
+var fsub="lig";
+function tab(n){
+  var sp=n===1?(fsub==="eu"?5:1):n,i;
+  for(i=1;i<=6;i++)$("p"+i).className="panel"+(i===sp?" on":"");
+  [1,2,3,4,6].forEach(function(k){$("t"+k).setAttribute("aria-selected",k===n)});
+  Array.prototype.forEach.call(document.querySelectorAll(".seg button"),function(b){b.setAttribute("aria-pressed",b.getAttribute("data-f")===fsub)});
+}
+[1,2,3,4,6].forEach(function(n){$("t"+n).onclick=function(){tab(n)}});
+document.addEventListener("click",function(e){var b=e.target.closest(".seg button");if(!b)return;fsub=b.getAttribute("data-f");tab(1)});
+$("st").oninput=function(){var v=parseFloat(this.value);stake=(v>0&&v<=1000000)?v:0;renderFb();renderEuropa();renderCombos();renderOther()};
+renderOther();renderFb();renderEuropa();renderCombos();renderHist();
+</script>
+</body>
+</html>
